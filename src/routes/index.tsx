@@ -12,6 +12,6 @@ export default [
   },
   {
     path: "/",
-    element: <Navigate to="/Page2025_01_01" />,
+    element: <Navigate to="/" />,
   },
 ];

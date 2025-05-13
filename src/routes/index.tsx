@@ -1,17 +1,17 @@
 import { Navigate } from "react-router-dom";
-import Page2025_01_01 from "../pages/web/Page2025_01_01";
-import Page2025_05_03 from "../pages/web/Page2025_05_03";
+import Home from "../pages/Home";
+import Log from "../pages/Log";
 export default [
   {
-    path: "/Page2025_01_01",
-    element: <Page2025_01_01 />,
-  },
-  {
-    path: "/Page2025_05_03",
-    element: <Page2025_05_03 />,
-  },
-  {
     path: "/",
-    element: <Navigate to="/" />,
+    element: <Navigate to="/home" />,
+  },
+  {
+    path: "/home",
+    element: <Home />,
+  },
+  {
+    path: "/log",
+    element: <Log />,
   },
 ];

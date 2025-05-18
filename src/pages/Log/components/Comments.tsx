@@ -21,9 +21,10 @@ export default function Comments() {
 
   // 获取评论数据
   useEffect(() => {
-    fetch(`http://47.95.171.19/comments?content_id=${id}`)
+    fetch(`https://api.zhongzhi.site/comments?content_id=${id}`)
       .then((res) => res.json())
       .then((data) => {
+        console.log("Raw response:", data); // 查看实际数据结构
         if (Array.isArray(data.data)) {
           // 按created_at降序排列
           const sorted = data.data
@@ -50,7 +51,7 @@ export default function Comments() {
     };
 
     // 调用后端插入接口
-    await fetch("http://47.95.171.19/comments/insert", {
+    await fetch("https://api.zhongzhi.site/comments/insert", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(commentData),
@@ -58,7 +59,7 @@ export default function Comments() {
 
     setNewComment("");
     // 重新获取评论并排序
-    fetch(`http://47.95.171.19/comments?content_id=${id}`)
+    fetch(`https://api.zhongzhi.site/comments?content_id=${id}`)
       .then((res) => res.json())
       .then((data) => {
         if (Array.isArray(data.data)) {

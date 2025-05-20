@@ -1,23 +1,25 @@
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Button, Card, Form, ListGroup, Image } from "react-bootstrap";
 import { useLocation } from "react-router-dom";
-import { supabase } from "../../Auth/utils/supabaseClient"; // 根据你的路径修改
+import { supabase } from "../../Auth/utils/supabaseClient"; // 路径请根据项目调整
+
+interface Comment {
+  id: number;
+  name: string;
+  content: string;
+  created_at: string;
+  avatar_url: string;
+  user_id: string;
+}
 
 export default function Comments() {
   const location = useLocation();
   const searchParams = new URLSearchParams(location.search);
-  const id = searchParams.get("id") || "0";
-
-  interface Comment {
-    id: number;
-    name: string;
-    content: string;
-    created_at: string;
-    avatar_url: string;
-  }
+  const contentId = searchParams.get("id") || "0";
 
   const [comments, setComments] = useState<Comment[]>([]);
   const [newComment, setNewComment] = useState("");
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const [userInfo, setUserInfo] = useState<{
     name: string;
     avatar_url: string;
@@ -26,7 +28,7 @@ export default function Comments() {
     avatar_url: "https://img.picgo.net/2025/05/05/touxiange48491887ed787ed.jpg",
   });
 
-  // 获取当前登录用户信息
+  // 获取当前用户信息
   useEffect(() => {
     const getUserInfo = async () => {
       const {
@@ -34,18 +36,18 @@ export default function Comments() {
       } = await supabase.auth.getUser();
 
       if (user) {
+        setCurrentUserId(user.id);
+
         const { data, error } = await supabase
           .from("users")
           .select("name, avatar_url")
           .eq("id", user.id)
           .single();
 
-        if (data && !error) {
+        if (!error && data) {
           setUserInfo({
             name: data.name || "匿名用户",
-            avatar_url:
-              data.avatar_url ||
-              "https://img.picgo.net/2025/05/05/touxiange48491887ed787ed.jpg",
+            avatar_url: data.avatar_url || userInfo.avatar_url,
           });
         }
       }
@@ -54,31 +56,44 @@ export default function Comments() {
     getUserInfo();
   }, []);
 
-  // 获取评论数据
+  // 加载评论
+  const loadComments = async () => {
+    const res = await fetch(
+      `https://api.zhongzhi.site/comments?content_id=${contentId}`
+    );
+    const data = await res.json();
+
+    if (Array.isArray(data.data)) {
+      const sorted = data.data
+        .slice()
+        .sort((a: Comment, b: Comment) =>
+          b.created_at.localeCompare(a.created_at)
+        );
+      setComments(sorted);
+    }
+  };
+
   useEffect(() => {
-    fetch(`https://api.zhongzhi.site/comments?content_id=${id}`)
-      .then((res) => res.json())
-      .then((data) => {
-        if (Array.isArray(data.data)) {
-          const sorted = data.data
-            .slice()
-            .sort((a: Comment, b: Comment) =>
-              b.created_at.localeCompare(a.created_at)
-            );
-          setComments(sorted);
-        }
-      });
-  }, [id]);
+    loadComments();
+  }, [contentId]);
 
   const handleCommentSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
     if (!newComment.trim()) return;
+
+    if (!currentUserId) {
+      alert("请先登录再发表评论！");
+      return;
+    }
+    console.log("supabase user:", currentUserId); // 👈 添加调试信息
 
     const commentData = {
       content: newComment,
       name: userInfo.name,
       avatar_url: userInfo.avatar_url,
-      content_id: id,
+      content_id: contentId,
+      user_id: currentUserId,
     };
 
     await fetch("https://api.zhongzhi.site/comments/insert", {
@@ -88,20 +103,29 @@ export default function Comments() {
     });
 
     setNewComment("");
+    loadComments();
+  };
+  
 
-    // 重新加载评论
-    fetch(`https://api.zhongzhi.site/comments?content_id=${id}`)
-      .then((res) => res.json())
-      .then((data) => {
-        if (Array.isArray(data.data)) {
-          const sorted = data.data
-            .slice()
-            .sort((a: Comment, b: Comment) =>
-              b.created_at.localeCompare(a.created_at)
-            );
-          setComments(sorted);
-        }
-      });
+  // 删除评论
+  const handleDelete = async (commentId: number) => {
+    if (!window.confirm("确定删除该评论？")) return;
+
+    const response = await fetch("https://api.zhongzhi.site/comments/delete", {
+      method: "DELETE",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        comment_id: commentId,
+        user_id: currentUserId, 
+      }),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.detail || "删除失败");
+    }
+
+    loadComments();
   };
 
   return (
@@ -134,7 +158,7 @@ export default function Comments() {
           </div>
         </Form>
 
-        <ListGroup variant="flush">
+        <ListGroup variant="flush" className="mt-3">
           {comments.map((comment) => (
             <ListGroup.Item key={comment.id} className="py-3">
               <div className="d-flex justify-content-between align-items-start mb-2">
@@ -149,9 +173,20 @@ export default function Comments() {
                   />
                   <strong>{comment.name}</strong>
                 </div>
-                <small className="text-muted">
-                  {comment.created_at.slice(0, 19).replace("T", " ")}
-                </small>
+                <div className="d-flex align-items-center gap-2">
+                  <small className="text-muted">
+                    {comment.created_at.slice(0, 19).replace("T", " ")}
+                  </small>
+                  {comment.user_id === currentUserId && (
+                    <Button
+                      size="sm"
+                      variant="outline-danger"
+                      onClick={() => handleDelete(comment.id)}
+                    >
+                      删除
+                    </Button>
+                  )}
+                </div>
               </div>
               <p className="mb-0">{comment.content}</p>
             </ListGroup.Item>

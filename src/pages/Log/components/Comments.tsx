@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { Button, Card, Form, ListGroup, Image } from "react-bootstrap";
 import { useLocation } from "react-router-dom";
+import { supabase } from "../../Auth/utils/supabaseClient"; // 根据你的路径修改
 
 export default function Comments() {
   const location = useLocation();
@@ -15,18 +16,50 @@ export default function Comments() {
     avatar_url: string;
   }
 
-  // 评论区状态管理
   const [comments, setComments] = useState<Comment[]>([]);
   const [newComment, setNewComment] = useState("");
+  const [userInfo, setUserInfo] = useState<{
+    name: string;
+    avatar_url: string;
+  }>({
+    name: "未登录用户",
+    avatar_url: "https://img.picgo.net/2025/05/05/touxiange48491887ed787ed.jpg",
+  });
+
+  // 获取当前登录用户信息
+  useEffect(() => {
+    const getUserInfo = async () => {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+
+      if (user) {
+        const { data, error } = await supabase
+          .from("users")
+          .select("name, avatar_url")
+          .eq("id", user.id)
+          .single();
+
+        if (data && !error) {
+          setUserInfo({
+            name: data.name || "匿名用户",
+            avatar_url:
+              data.avatar_url ||
+              "https://img.picgo.net/2025/05/05/touxiange48491887ed787ed.jpg",
+          });
+        }
+      }
+    };
+
+    getUserInfo();
+  }, []);
 
   // 获取评论数据
   useEffect(() => {
     fetch(`https://api.zhongzhi.site/comments?content_id=${id}`)
       .then((res) => res.json())
       .then((data) => {
-        console.log("Raw response:", data); // 查看实际数据结构
         if (Array.isArray(data.data)) {
-          // 按created_at降序排列
           const sorted = data.data
             .slice()
             .sort((a: Comment, b: Comment) =>
@@ -37,20 +70,17 @@ export default function Comments() {
       });
   }, [id]);
 
-  // 评论提交处理
   const handleCommentSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newComment.trim()) return;
 
     const commentData = {
       content: newComment,
-      name: "未登录用户",
-      avatar_url:
-        "https://img.picgo.net/2025/05/05/touxiange48491887ed787ed.jpg",
+      name: userInfo.name,
+      avatar_url: userInfo.avatar_url,
       content_id: id,
     };
 
-    // 调用后端插入接口
     await fetch("https://api.zhongzhi.site/comments/insert", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -58,7 +88,8 @@ export default function Comments() {
     });
 
     setNewComment("");
-    // 重新获取评论并排序
+
+    // 重新加载评论
     fetch(`https://api.zhongzhi.site/comments?content_id=${id}`)
       .then((res) => res.json())
       .then((data) => {
@@ -74,12 +105,14 @@ export default function Comments() {
   };
 
   return (
-    <Card className="w-4/5 mt-4 shadow-sm mx-auto">
+    <Card
+      className="w-4/5 mt-4 shadow-sm mx-auto"
+      style={{ marginBottom: "50px" }}
+    >
       <Card.Header as="h5" className="bg-light">
         🗨️ 评论区（{comments.length} 条）
       </Card.Header>
       <Card.Body>
-        {/* 评论发表表单 */}
         <Form onSubmit={handleCommentSubmit}>
           <Form.Group controlId="commentForm" className="mb-3">
             <Form.Control
@@ -101,7 +134,6 @@ export default function Comments() {
           </div>
         </Form>
 
-        {/* 评论列表 */}
         <ListGroup variant="flush">
           {comments.map((comment) => (
             <ListGroup.Item key={comment.id} className="py-3">

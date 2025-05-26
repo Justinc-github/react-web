@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Button, Card, Form, ListGroup, Image } from "react-bootstrap";
 import { useLocation } from "react-router-dom";
 import { supabase } from "../../Auth/utils/supabaseClient"; // 路径请根据项目调整
@@ -54,10 +54,10 @@ export default function Comments() {
     };
 
     getUserInfo();
-  }, []);
+  }, [userInfo.avatar_url]);
 
   // 加载评论
-  const loadComments = async () => {
+  const loadComments = useCallback(async () => {
     const res = await fetch(
       `https://api.zhongzhi.site/comments?content_id=${contentId}`
     );
@@ -71,11 +71,11 @@ export default function Comments() {
         );
       setComments(sorted);
     }
-  };
+  }, [contentId]);
 
   useEffect(() => {
     loadComments();
-  }, [contentId]);
+  }, [loadComments]);
 
   const handleCommentSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -116,7 +116,7 @@ export default function Comments() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         comment_id: commentId,
-        user_id: currentUserId, 
+        user_id: currentUserId,
       }),
     });
 

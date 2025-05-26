@@ -1,5 +1,15 @@
+import { useState } from "react";
+import ImageModal from "../../../utils/ImageModal";
+
 export default function Page2025_01_01() {
-  
+  const [showModal, setShowModal] = useState(false);
+  const [selectedImg, setSelectedImg] = useState("");
+
+  const handleImageClick = (imgUrl: string) => {
+    setSelectedImg(imgUrl);
+    setShowModal(true);
+  };
+
   return (
     <div style={{ padding: "10%" }} className="container mx-auto p-8">
       <div className="bg-white p-6 rounded-lg shadow-md mb-8">
@@ -15,6 +25,11 @@ export default function Page2025_01_01() {
           height="50%"
           alt="1"
           className="mt-4 rounded-lg mx-auto block"
+          onClick={() =>
+            handleImageClick(
+              "https://pic1.imgdb.cn/item/6819ec8e58cb8da5c8e06f29.jpg"
+            )
+          }
         />
         <img
           src="https://pic1.imgdb.cn/item/6819be6a58cb8da5c8dfcbfb.gif"
@@ -35,6 +50,11 @@ export default function Page2025_01_01() {
             src="https://pic1.imgdb.cn/item/6819e5df58cb8da5c8e06893.png"
             alt="2"
             className="mt-4 rounded-lg mx-auto block"
+            onClick={() =>
+              handleImageClick(
+                "https://pic1.imgdb.cn/item/6819e5df58cb8da5c8e06893.png"
+              )
+            }
           />
           <figcaption className="text-sm italic text-gray-600">
             大地飞歌-黄俊涛
@@ -47,6 +67,11 @@ export default function Page2025_01_01() {
             src="https://pic1.imgdb.cn/item/6819e5df58cb8da5c8e06890.png"
             alt="2"
             className="mt-4 rounded-lg mx-auto block"
+            onClick={() =>
+              handleImageClick(
+                "https://pic1.imgdb.cn/item/6819e5df58cb8da5c8e06890.png"
+              )
+            }
           />
           <figcaption className="text-sm italic text-gray-600">
             喀秋莎-贾鹏博
@@ -59,6 +84,11 @@ export default function Page2025_01_01() {
             src="https://pic1.imgdb.cn/item/681b3a4558cb8da5c8e332b8.png"
             alt="3"
             className="mt-4 rounded-lg mx-auto block"
+            onClick={() =>
+              handleImageClick(
+                "https://pic1.imgdb.cn/item/681b3a4558cb8da5c8e332b8.png"
+              )
+            }
           />
           <figcaption className="text-sm italic text-gray-600">
             崂山道士-吴宇航
@@ -71,6 +101,11 @@ export default function Page2025_01_01() {
             src="https://pic1.imgdb.cn/item/681b3a4558cb8da5c8e332b6.png"
             alt="4"
             className="mt-4 rounded-lg mx-auto block"
+            onClick={() =>
+              handleImageClick(
+                "https://pic1.imgdb.cn/item/681b3a4558cb8da5c8e332b6.png"
+              )
+            }
           />
           <figcaption className="text-sm italic text-gray-600">
             葡萄成熟时-蒋政
@@ -83,6 +118,11 @@ export default function Page2025_01_01() {
             src="https://pic1.imgdb.cn/item/681b3a4558cb8da5c8e332b7.png"
             alt="5"
             className="mt-4 rounded-lg mx-auto block"
+            onClick={() =>
+              handleImageClick(
+                "https://pic1.imgdb.cn/item/681b3a4558cb8da5c8e332b7.png"
+              )
+            }
           />
           <figcaption className="text-sm italic text-gray-600">
             如春-陈鹤鑫
@@ -96,6 +136,11 @@ export default function Page2025_01_01() {
             src="https://pic1.imgdb.cn/item/681b3b3358cb8da5c8e3332e.png"
             alt="5"
             className="mt-4 rounded-lg mx-auto block"
+            onClick={() =>
+              handleImageClick(
+                "https://pic1.imgdb.cn/item/681b3b3358cb8da5c8e3332e.png"
+              )
+            }
           />
           <figcaption className="text-sm italic text-gray-600">
             杜志跃、王田田-郎的诱惑
@@ -110,6 +155,11 @@ export default function Page2025_01_01() {
                 src="https://pic1.imgdb.cn/item/681b613258cb8da5c8e3d4d4.jpg"
                 alt="5"
                 className="mt-4 rounded-lg"
+                onClick={() =>
+                  handleImageClick(
+                    "https://pic1.imgdb.cn/item/681b613258cb8da5c8e3d4d4.jpg"
+                  )
+                }
               />
               <img
                 width="50%"
@@ -117,6 +167,11 @@ export default function Page2025_01_01() {
                 src="https://pic1.imgdb.cn/item/681b613658cb8da5c8e3d4d5.jpg"
                 alt="5"
                 className="mt-4 rounded-lg"
+                onClick={() =>
+                  handleImageClick(
+                    "https://pic1.imgdb.cn/item/681b613658cb8da5c8e3d4d5.jpg"
+                  )
+                }
               />
             </div>
           </div>
@@ -125,6 +180,7 @@ export default function Page2025_01_01() {
           </figcaption>
         </figure>
       </div>
+
       <div className="bg-white p-6 rounded-lg shadow-md mb-8">
         <h2 className="text-2xl font-bold mb-2">旦逢良辰-游戏类</h2>
         <p className="text-gray-700 leading-relaxed">
@@ -145,6 +201,11 @@ export default function Page2025_01_01() {
             src="https://pic1.imgdb.cn/item/681b3c6258cb8da5c8e333a9.png"
             alt="5"
             className="mt-4 rounded-lg mx-auto block"
+            onClick={() =>
+              handleImageClick(
+                "https://pic1.imgdb.cn/item/681b3c6258cb8da5c8e333a9.png"
+              )
+            }
           />
           <figcaption className="text-sm italic text-gray-600"></figcaption>
         </figure>
@@ -155,6 +216,11 @@ export default function Page2025_01_01() {
             src="https://pic1.imgdb.cn/item/681b3c6158cb8da5c8e333a8.png"
             alt="5"
             className="mt-4 rounded-lg mx-auto block"
+            onClick={() =>
+              handleImageClick(
+                "https://pic1.imgdb.cn/item/681b3c6158cb8da5c8e333a8.png"
+              )
+            }
           />
           <figcaption className="text-sm italic text-gray-600">
             只剩俩能打的了=D
@@ -170,6 +236,11 @@ export default function Page2025_01_01() {
             src="https://pic1.imgdb.cn/item/681b3c6058cb8da5c8e333a7.png"
             alt="5"
             className="mt-4 rounded-lg mx-auto block"
+            onClick={() =>
+              handleImageClick(
+                "https://pic1.imgdb.cn/item/681b3c6058cb8da5c8e333a7.png"
+              )
+            }
           />
           <figcaption className="text-sm italic text-gray-600">
             比划猜词
@@ -184,6 +255,7 @@ export default function Page2025_01_01() {
           className="mt-4 rounded-lg mx-auto block"
         />
       </div>
+
       <div className="bg-white p-6 rounded-lg shadow-md mb-8">
         <h2 className="text-2xl font-bold mb-2">永绥吉劭-语言类</h2>
         <p className="text-gray-700 leading-relaxed">
@@ -207,6 +279,11 @@ export default function Page2025_01_01() {
             src="https://pic1.imgdb.cn/item/681b429358cb8da5c8e35a2a.png"
             alt="5"
             className="mt-4 rounded-lg mx-auto block"
+            onClick={() =>
+              handleImageClick(
+                "https://pic1.imgdb.cn/item/681b429358cb8da5c8e35a2a.png"
+              )
+            }
           />
           <figcaption className="text-sm italic text-gray-600">
             不像话的人-曲明三点水·告
@@ -219,6 +296,11 @@ export default function Page2025_01_01() {
             src="https://pic1.imgdb.cn/item/6819e5e058cb8da5c8e06897.png"
             alt="5"
             className="mt-4 rounded-lg mx-auto block"
+            onClick={() =>
+              handleImageClick(
+                "https://pic1.imgdb.cn/item/6819e5e058cb8da5c8e06897.png"
+              )
+            }
           />
           <figcaption className="text-sm italic text-gray-600">
             哲学家的愿望-王勃、李昭毅、于明昆
@@ -231,6 +313,11 @@ export default function Page2025_01_01() {
             src="https://pic1.imgdb.cn/item/681b48b658cb8da5c8e387f6.png"
             alt="5"
             className="mt-4 rounded-lg mx-auto block"
+            onClick={() =>
+              handleImageClick(
+                "https://pic1.imgdb.cn/item/681b48b658cb8da5c8e387f6.png"
+              )
+            }
           />
           <figcaption className="text-sm italic text-gray-600"></figcaption>
         </figure>
@@ -241,6 +328,11 @@ export default function Page2025_01_01() {
             src="https://pic1.imgdb.cn/item/681b429358cb8da5c8e35a3f.png"
             alt="5"
             className="mt-4 rounded-lg mx-auto block"
+            onClick={() =>
+              handleImageClick(
+                "https://pic1.imgdb.cn/item/681b429358cb8da5c8e35a3f.png"
+              )
+            }
           />
           <figcaption className="text-sm italic text-gray-600">
             三句半-高尚、孙嘉成
@@ -253,6 +345,11 @@ export default function Page2025_01_01() {
             src="https://pic1.imgdb.cn/item/681b58c958cb8da5c8e3d220.png"
             alt="5"
             className="mt-4 rounded-lg mx-auto block"
+            onClick={() =>
+              handleImageClick(
+                "https://pic1.imgdb.cn/item/681b58c958cb8da5c8e3d220.png"
+              )
+            }
           />
           <figcaption className="text-sm italic text-gray-600">
             我爱团队朗诵-朱海生、李彬、李先念
@@ -268,8 +365,12 @@ export default function Page2025_01_01() {
             src="https://pic1.imgdb.cn/item/681b429358cb8da5c8e35a3e.png"
             alt="5"
             className="mt-4 rounded-lg mx-auto block"
+            onClick={() =>
+              handleImageClick(
+                "https://pic1.imgdb.cn/item/681b429358cb8da5c8e35a3e.png"
+              )
+            }
           />
-
           <figcaption className="text-sm italic text-gray-600">
             一个节目-杜志跃、王田田、鲁晓啼、孙梦镁、余佳琪
           </figcaption>
@@ -284,6 +385,11 @@ export default function Page2025_01_01() {
             src="https://pic1.imgdb.cn/item/681b5a5b58cb8da5c8e3d2c2.png"
             alt="5"
             className="mt-4 rounded-lg mx-auto block"
+            onClick={() =>
+              handleImageClick(
+                "https://pic1.imgdb.cn/item/681b5a5b58cb8da5c8e3d2c2.png"
+              )
+            }
           />
           <figcaption className="text-sm italic text-gray-600">
             考试结束前十五分钟-赵鹏、赵芷涵、蒋龙、李彬、朱海生、吴宇航、曲明浩
@@ -296,6 +402,11 @@ export default function Page2025_01_01() {
             src="https://pic1.imgdb.cn/item/681b4fb858cb8da5c8e38d2d.png"
             alt="5"
             className="mt-4 rounded-lg mx-auto block"
+            onClick={() =>
+              handleImageClick(
+                "https://pic1.imgdb.cn/item/681b4fb858cb8da5c8e38d2d.png"
+              )
+            }
           />
           <figcaption className="text-sm italic text-gray-600">
             老赵家神人
@@ -308,6 +419,11 @@ export default function Page2025_01_01() {
             src="https://pic1.imgdb.cn/item/681b429358cb8da5c8e35a41.png"
             alt="5"
             className="mt-4 rounded-lg mx-auto block"
+            onClick={() =>
+              handleImageClick(
+                "https://pic1.imgdb.cn/item/681b429358cb8da5c8e35a41.png"
+              )
+            }
           />
           <figcaption className="text-sm italic text-gray-600">
             修路冒油子准备跑路的李师傅和朱师傅
@@ -320,6 +436,11 @@ export default function Page2025_01_01() {
             src="https://pic1.imgdb.cn/item/681b4fb858cb8da5c8e38d36.png"
             alt="5"
             className="mt-4 rounded-lg mx-auto block"
+            onClick={() =>
+              handleImageClick(
+                "https://pic1.imgdb.cn/item/681b4fb858cb8da5c8e38d36.png"
+              )
+            }
           />
           <figcaption className="text-sm italic text-gray-600">
             疑似赵鹏改名赵云鹏
@@ -332,6 +453,11 @@ export default function Page2025_01_01() {
             src="https://pic1.imgdb.cn/item/681b429358cb8da5c8e35a3c.png"
             alt="5"
             className="mt-4 rounded-lg mx-auto block"
+            onClick={() =>
+              handleImageClick(
+                "https://pic1.imgdb.cn/item/681b429358cb8da5c8e35a3c.png"
+              )
+            }
           />
           <figcaption className="text-sm italic text-gray-600">
             龙哥就是龙，惹啊。数学薄纱祖冲之；物理踩头爱因斯坦，真是斯斯又坦坦啊。
@@ -344,6 +470,11 @@ export default function Page2025_01_01() {
             src="https://pic1.imgdb.cn/item/681b4fb858cb8da5c8e38d37.png"
             alt="5"
             className="mt-4 rounded-lg mx-auto block"
+            onClick={() =>
+              handleImageClick(
+                "https://pic1.imgdb.cn/item/681b4fb858cb8da5c8e38d37.png"
+              )
+            }
           />
           <figcaption className="text-sm italic text-gray-600">
             头脑风暴段羽球少年再添新爹
@@ -358,6 +489,7 @@ export default function Page2025_01_01() {
           className="mt-4 rounded-lg mx-auto block"
         />
       </div>
+
       <div className="bg-white p-6 rounded-lg shadow-md">
         <h2 className="text-2xl font-bold mb-2">喜神多瑞-特别篇</h2>
         <figure className="text-center">
@@ -367,6 +499,11 @@ export default function Page2025_01_01() {
             src="https://pic1.imgdb.cn/item/6819e5df58cb8da5c8e06892.png"
             alt="5"
             className="mt-4 rounded-lg mx-auto block"
+            onClick={() =>
+              handleImageClick(
+                "https://pic1.imgdb.cn/item/6819e5df58cb8da5c8e06892.png"
+              )
+            }
           />
           <figcaption className="text-sm italic text-gray-600">
             老师被迫营业
@@ -379,6 +516,11 @@ export default function Page2025_01_01() {
             src="https://pic1.imgdb.cn/item/6819e5e058cb8da5c8e06896.png"
             alt="5"
             className="mt-4 rounded-lg mx-auto block"
+            onClick={() =>
+              handleImageClick(
+                "https://pic1.imgdb.cn/item/6819e5e058cb8da5c8e06896.png"
+              )
+            }
           />
           <figcaption className="text-sm italic text-gray-600"></figcaption>
         </figure>
@@ -389,6 +531,11 @@ export default function Page2025_01_01() {
             src="https://pic1.imgdb.cn/item/681b526e58cb8da5c8e3b0f3.jpg"
             alt="5"
             className="mt-4 rounded-lg mx-auto block"
+            onClick={() =>
+              handleImageClick(
+                "https://pic1.imgdb.cn/item/681b526e58cb8da5c8e3b0f3.jpg"
+              )
+            }
           />
           <figcaption className="text-sm italic text-gray-600"></figcaption>
         </figure>
@@ -399,6 +546,11 @@ export default function Page2025_01_01() {
             src="https://pic1.imgdb.cn/item/681b526d58cb8da5c8e3b0ee.jpg"
             alt="5"
             className="mt-4 rounded-lg mx-auto block"
+            onClick={() =>
+              handleImageClick(
+                "https://pic1.imgdb.cn/item/681b526d58cb8da5c8e3b0ee.jpg"
+              )
+            }
           />
           <figcaption className="text-sm italic text-gray-600">
             23届卧龙凤雏和一坨不知道什么玩楞
@@ -411,6 +563,11 @@ export default function Page2025_01_01() {
             src="https://pic1.imgdb.cn/item/681b52e158cb8da5c8e3b670.jpg"
             alt="5"
             className="mt-4 rounded-lg mx-auto block"
+            onClick={() =>
+              handleImageClick(
+                "https://pic1.imgdb.cn/item/681b52e158cb8da5c8e3b670.jpg"
+              )
+            }
           />
           <figcaption className="text-sm italic text-gray-600">
             众智兵王，铁血战狠
@@ -423,6 +580,11 @@ export default function Page2025_01_01() {
             src="https://pic1.imgdb.cn/item/681b53e858cb8da5c8e3c3af.png"
             alt="5"
             className="mt-4 rounded-lg mx-auto block"
+            onClick={() =>
+              handleImageClick(
+                "https://pic1.imgdb.cn/item/681b53e858cb8da5c8e3c3af.png"
+              )
+            }
           />
           <figcaption className="text-sm italic text-gray-600">
             奶龙和贝利亚の糖分OVERDOSE
@@ -433,6 +595,11 @@ export default function Page2025_01_01() {
             src="https://pic1.imgdb.cn/item/681b53e658cb8da5c8e3c394.png"
             alt="5"
             className="mt-4 rounded-lg mx-auto block"
+            onClick={() =>
+              handleImageClick(
+                "https://pic1.imgdb.cn/item/681b53e658cb8da5c8e3c394.png"
+              )
+            }
           />
           <figcaption className="text-sm italic text-gray-600">
             看完得打两管胰岛素-赵芷涵、鲁晓啼
@@ -445,12 +612,18 @@ export default function Page2025_01_01() {
             src="https://pic1.imgdb.cn/item/681b634758cb8da5c8e3d5f5.jpg"
             alt="5"
             className="mt-4 rounded-lg mx-auto block"
+            onClick={() =>
+              handleImageClick(
+                "https://pic1.imgdb.cn/item/681b634758cb8da5c8e3d5f5.jpg"
+              )
+            }
           />
           <figcaption className="text-sm italic text-gray-600">
             敢直视神吗
           </figcaption>
         </figure>
       </div>
+
       <div className="bg-white p-6 rounded-lg shadow-md mb-8">
         <figure className="text-center">
           <img
@@ -459,12 +632,23 @@ export default function Page2025_01_01() {
             src="https://pic1.imgdb.cn/item/681b604f58cb8da5c8e3d494.png"
             alt="5"
             className="mt-4 rounded-lg mx-auto block"
+            onClick={() =>
+              handleImageClick(
+                "https://pic1.imgdb.cn/item/681b604f58cb8da5c8e3d494.png"
+              )
+            }
           />
           <figcaption className="text-sm italic text-gray-600">
             大头照合订本
           </figcaption>
         </figure>
       </div>
+
+      <ImageModal
+        show={showModal}
+        onHide={() => setShowModal(false)}
+        imgUrl={selectedImg}
+      />
     </div>
   );
 }

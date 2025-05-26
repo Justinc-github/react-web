@@ -1,0 +1,83 @@
+/* 主导航项悬停效果 */
+.nav-hover {
+    transition: all 0.3s ease;
+    border-radius: 8px;
+    margin: 0 5px;
+  }
+  
+  .nav-hover:hover {
+    background-color:rgb(57, 136, 220) !important; /* 悬停背景色 */
+    color: white !important;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+  }
+  
+  /* 下拉菜单项悬停效果 */
+  .dropdown-hover:hover {
+    background-color:rgb(57, 136, 220) !important;
+    color: white !important;
+  }
+  
+  /* 当前激活项样式 */
+  .nav-pills .nav-link.active {
+    background-color: rgb(57, 136, 220) !important;
+  }
+  
+  /* 下拉菜单整体样式 */
+  .nav-hover-dropdown .dropdown-menu {
+    border-radius: 8px;
+    border: 1px solid #e0e0e0;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  }
+  
+  /* 响应式调整 */
+  @media (max-width: 768px) {
+    .nav-hover {
+      margin: 5px 0;
+      text-align: center;
+    }
+    
+    .nav-hover:hover {
+      transform: translateX(5px);
+    }
+  }
+
+
+  /* 使导航项填充整个宽度 */
+.custom-nav {
+  display: flex !important;
+  justify-content: space-around;
+}
+
+/* 每个导航项和下拉菜单容器 */
+.nav-item-flex,
+.nav-dropdown-flex {
+  flex: 1;
+  text-align: center;
+}
+
+/* 导航链接样式 */
+.nav-hover {
+  width: 100%;
+  display: block !important;
+  text-align: center !important;
+}
+
+/* 下拉菜单触发按钮样式 */
+.nav-dropdown-flex .dropdown-toggle {
+  width: 100%;
+  display: block !important;
+  text-align: center !important;
+}
+
+/* 下拉菜单项悬停效果 */
+.dropdown-hover:hover {
+  background-color: #f8f9fa;
+}
+
+/* 调整下拉菜单位置 */
+.nav-dropdown-flex .dropdown-menu {
+  left: 50% !important;
+  transform: translateX(-50%) !important;
+}
+  

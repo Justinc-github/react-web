@@ -22,12 +22,7 @@ export default [
       </RequireAuth>
     ),
   },
-  {
-    path: "/register",
-    element: (
-        <Register />
-    ),
-  },
+
   {
     path: "/login",
     element: <Login />, // 登录页本身不需要保护
@@ -65,5 +60,9 @@ export default [
         element: <Page2025_05_03 />,
       },
     ],
+  },
+  {
+    path: "/register",
+    element: <Register />,
   },
 ];

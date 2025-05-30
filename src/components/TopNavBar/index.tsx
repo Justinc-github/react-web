@@ -1,12 +1,14 @@
 import { Container, Nav, Navbar, NavDropdown, Image } from "react-bootstrap";
 import "./TopNavBar.css";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useState } from "react";
+import { signOut } from "../../pages/Auth/utils/logout";
 // import { useUser } from "../../pages/Auth/utils/userCurrent";
 
 export default function TopNavbar() {
   const location = useLocation();
   const [showDropdown, setShowDropdown] = useState(false);
+  const navigate = useNavigate();
 
   // 模拟用户数据
   const user = {
@@ -15,8 +17,15 @@ export default function TopNavbar() {
       "https://img.picgo.net/2025/05/05/scaled_100000060809edf5c408fc3a87.jpeg",
     email: "zhangsan@example.com",
   };
-
-  
+  const handleSignOut = async () => {
+    const result = await signOut();
+    if (result.success) {
+      // 重定向到登录页
+      navigate("/login", { replace: true });
+    } else {
+      alert(`退出失败: ${result.error}`);
+    }
+  };
   return (
     <Navbar bg="light" expand="lg">
       <Container>
@@ -81,23 +90,23 @@ export default function TopNavbar() {
                 className="main-avatar"
                 roundedCircle
                 alt="用户头像"
-                style={{width: '40px', height:'40px'}}
+                style={{ width: "40px", height: "40px" }}
               />
             }
           >
-            <div className="px-3 py-2">
+            {/* <div className="px-3 py-2">
               <div className="fw-bold">{user.name}</div>
               <div className="text-muted small">{user.email}</div>
-            </div>
-            <NavDropdown.Divider />
+            </div> */}
+            {/* <NavDropdown.Divider />
             <NavDropdown.Item as={Link} to="/profile">
               个人资料
             </NavDropdown.Item>
             <NavDropdown.Item as={Link} to="/settings">
               账号设置
             </NavDropdown.Item>
-            <NavDropdown.Divider />
-            <NavDropdown.Item className="text-danger">
+            <NavDropdown.Divider /> */}
+            <NavDropdown.Item className="text-danger" onClick={handleSignOut}>
               退出登录
             </NavDropdown.Item>
           </NavDropdown>

@@ -8,7 +8,6 @@ import Page2025_05_03 from "../pages/Log/pages/Page2025_05_03";
 import Music from "../pages/Music";
 import RequireAuth from "../pages/Auth/components/requireAuth";
 import Login from "../pages/Auth";
-import Register from "../static/pages/register.tsx";
 export default [
   {
     path: "/",
@@ -60,9 +59,5 @@ export default [
         element: <Page2025_05_03 />,
       },
     ],
-  },
-  {
-    path: "/register",
-    element: <Register />,
   },
 ];

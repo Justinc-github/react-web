@@ -95,7 +95,7 @@ export default function Comments() {
       content_id: contentId,
       user_id: currentUserId,
     };
-
+    
     await fetch("https://api.zhongzhi.site/comments/insert", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -128,6 +128,14 @@ export default function Comments() {
     loadComments();
   };
 
+  // 快捷发送评论
+  const handleKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter" && !e.shiftKey && !e.ctrlKey) {
+      e.preventDefault();
+      handleCommentSubmit(e);
+    }
+  };
+
   return (
     <Card
       className="w-4/5 mt-4 shadow-sm mx-auto"
@@ -144,6 +152,7 @@ export default function Comments() {
               rows={3}
               value={newComment}
               onChange={(e) => setNewComment(e.target.value)}
+              onKeyDown={handleKeyPress}
               placeholder="请输入您的评论..."
             />
           </Form.Group>

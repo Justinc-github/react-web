@@ -95,7 +95,7 @@ export default function Login() {
         </button>
       </form>
 
-      <div className="mt-4 text-center">
+      {/* <div className="mt-4 text-center">
         <p className="text-gray-600">
           还没有账号？{" "}
           <a
@@ -109,7 +109,7 @@ export default function Login() {
             立即注册
           </a>
         </p>
-      </div>
+      </div> */}
     </div>
   );
 }

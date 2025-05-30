@@ -1,18 +1,31 @@
-import { Container, Nav, Navbar, NavDropdown } from "react-bootstrap";
+import { Container, Nav, Navbar, NavDropdown, Image } from "react-bootstrap";
 import "./TopNavBar.css";
 import { Link, useLocation } from "react-router-dom";
+import { useState } from "react";
+// import { useUser } from "../../pages/Auth/utils/userCurrent";
 
 export default function TopNavbar() {
-  const location = useLocation(); // 获取当前路由信息
+  const location = useLocation();
+  const [showDropdown, setShowDropdown] = useState(false);
 
+  // 模拟用户数据
+  const user = {
+    name: "张三",
+    avatar:
+      "https://img.picgo.net/2025/05/05/scaled_100000060809edf5c408fc3a87.jpeg",
+    email: "zhangsan@example.com",
+  };
+
+  
   return (
     <Navbar bg="light" expand="lg">
       <Container>
         <Nav
           variant="pills"
-          activeKey={location.pathname} // 动态绑定当前路径
+          activeKey={location.pathname}
           className="custom-nav w-100"
         >
+          {/* 导航项保持不变 */}
           <Nav.Item className="nav-item-flex">
             <Nav.Link
               as={Link}
@@ -50,11 +63,45 @@ export default function TopNavbar() {
             </NavDropdown.Item>
           </NavDropdown>
         </Nav>
-        <img
-          src="https://img.picgo.net/2025/05/26/logoe24a9a02409449d6.png"
-          style={{ height: "35px", width: "35px" }}
-          alt="logo"
-        />
+
+        {/* 头像及下拉菜单区域 */}
+        <div
+          className="avatar-container position-relative"
+          onMouseEnter={() => setShowDropdown(true)}
+          onMouseLeave={() => setShowDropdown(false)}
+        >
+          <NavDropdown
+            show={showDropdown}
+            align="end"
+            id="user-dropdown"
+            className="dropdown-menu-custom"
+            title={
+              <Image
+                src={user.avatar}
+                className="main-avatar"
+                roundedCircle
+                alt="用户头像"
+                style={{width: '40px', height:'40px'}}
+              />
+            }
+          >
+            <div className="px-3 py-2">
+              <div className="fw-bold">{user.name}</div>
+              <div className="text-muted small">{user.email}</div>
+            </div>
+            <NavDropdown.Divider />
+            <NavDropdown.Item as={Link} to="/profile">
+              个人资料
+            </NavDropdown.Item>
+            <NavDropdown.Item as={Link} to="/settings">
+              账号设置
+            </NavDropdown.Item>
+            <NavDropdown.Divider />
+            <NavDropdown.Item className="text-danger">
+              退出登录
+            </NavDropdown.Item>
+          </NavDropdown>
+        </div>
       </Container>
     </Navbar>
   );

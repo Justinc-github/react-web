@@ -44,7 +44,11 @@ export default [
   },
   {
     path: "/log/pages",
-    element: <FullScreenLayout />,
+    element: (
+      <RequireAuth>
+        <FullScreenLayout />
+      </RequireAuth>
+    ),
     children: [
       {
         path: "page2025_01_01",

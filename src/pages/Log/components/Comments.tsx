@@ -86,7 +86,7 @@ export default function Comments() {
       alert("请先登录再发表评论！");
       return;
     }
-    console.log("supabase user:", currentUserId); // 👈 添加调试信息
+    console.log("supabase user:", currentUserId);
 
     const commentData = {
       content: newComment,

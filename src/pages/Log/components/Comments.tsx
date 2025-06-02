@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from "react";
 import { Button, Card, Form, ListGroup, Image } from "react-bootstrap";
 import { useLocation } from "react-router-dom";
 import { supabase } from "../../Auth/utils/supabaseClient";
+import ImageModal from "../../../utils/ImageModal";
 
 interface Comment {
   id: number;
@@ -17,7 +18,7 @@ export default function Comments() {
   const location = useLocation();
   const searchParams = new URLSearchParams(location.search);
   const contentId = searchParams.get("id") || "0";
-
+ 
   const [comments, setComments] = useState<Comment[]>([]);
   const [newComment, setNewComment] = useState("");
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
@@ -27,6 +28,12 @@ export default function Comments() {
     avatar_url: "https://img.picgo.net/2025/05/05/touxiange48491887ed787ed.jpg",
   });
 
+  const [showModal, setShowModal] = useState(false);
+  const [selectedImg, setSelectedImg] = useState("");
+  const handleImageClick = (imgUrl: string) => {
+    setSelectedImg(imgUrl);
+    setShowModal(true);
+  };
   // 获取当前用户信息
   useEffect(() => {
     const getUserInfo = async () => {
@@ -178,138 +185,145 @@ export default function Comments() {
   };
 
   return (
-    <Card
-      className="w-4/5 mt-4 shadow-sm mx-auto"
-      style={{ marginBottom: "50px" }}
-    >
-      <Card.Header as="h5" className="bg-light">
-        🗨️ 评论区（{comments.length} 条）
-      </Card.Header>
-      <Card.Body>
-        <Form onSubmit={handleCommentSubmit}>
-          <Form.Group controlId="commentForm" className="mb-3">
-            <Form.Control
-              as="textarea"
-              rows={3}
-              value={newComment}
-              onChange={(e) => setNewComment(e.target.value)}
-              onKeyDown={handleKeyPress}
-              placeholder="请输入您的评论..."
-            />
-          </Form.Group>
+    <div>
+      <Card
+        className="w-4/5 mt-4 shadow-sm mx-auto"
+        style={{ marginBottom: "50px" }}
+      >
+        <Card.Header as="h5" className="bg-light">
+          🗨️ 评论区（{comments.length} 条）
+        </Card.Header>
+        <Card.Body>
+          <Form onSubmit={handleCommentSubmit}>
+            <Form.Group controlId="commentForm" className="mb-3">
+              <Form.Control
+                as="textarea"
+                rows={3}
+                value={newComment}
+                onChange={(e) => setNewComment(e.target.value)}
+                onKeyDown={handleKeyPress}
+                placeholder="请输入您的评论..."
+              />
+            </Form.Group>
 
-          <Form.Group controlId="imageUpload" className="mb-3">
-            <Form.Label>上传图片（最多 5 张）</Form.Label>
-            <Form.Control
-              type="file"
-              multiple
-              accept="image/*"
-              onChange={(e) => {
-                const input = e.target as HTMLInputElement;
-                const files = Array.from(input.files || []);
-                if (files.length + selectedImages.length > 5) {
-                  alert("最多上传 5 张图片");
-                  return;
-                }
-                setSelectedImages((prev) => [...prev, ...files]);
-              }}
-            />
-            <div className="mt-2 d-flex flex-wrap gap-2">
-              {selectedImages.map((file, index) => (
-                <div key={index} style={{ position: "relative" }}>
-                  <Image
-                    src={URL.createObjectURL(file)}
-                    thumbnail
-                    width={80}
-                    height={80}
-                    style={{ objectFit: "cover" }}
-                  />
-                  <Button
-                    variant="danger"
-                    size="sm"
-                    style={{
-                      position: "absolute",
-                      top: -5,
-                      right: -5,
-                      borderRadius: "50%",
-                    }}
-                    onClick={() =>
-                      setSelectedImages((prev) =>
-                        prev.filter((_, i) => i !== index)
-                      )
-                    }
-                  >
-                    ×
-                  </Button>
-                </div>
-              ))}
-            </div>
-          </Form.Group>
-
-          <div className="d-flex justify-content-end">
-            <Button
-              variant="primary"
-              type="submit"
-              disabled={!newComment.trim() && selectedImages.length === 0}
-            >
-              发表评论
-            </Button>
-          </div>
-        </Form>
-
-        <ListGroup variant="flush" className="mt-3">
-          {comments.map((comment) => (
-            <ListGroup.Item key={comment.id} className="py-3">
-              <div className="d-flex justify-content-between align-items-start mb-2">
-                <div className="d-flex align-items-center gap-2">
-                  <Image
-                    src={comment.avatar_url}
-                    width={32}
-                    height={32}
-                    roundedCircle
-                    style={{
-                      aspectRatio: "1/1",
-                      objectFit: "cover",
-                    }}
-                    alt="avatar"
-                  />
-                  <strong>{comment.name}</strong>
-                </div>
-                <div className="d-flex align-items-center gap-2">
-                  <small className="text-muted">
-                    {comment.created_at.slice(0, 19).replace("T", " ")}
-                  </small>
-                  {comment.user_id === currentUserId && (
-                    <Button
-                      size="sm"
-                      variant="outline-danger"
-                      onClick={() => handleDelete(comment.id)}
-                    >
-                      删除
-                    </Button>
-                  )}
-                </div>
-              </div>
-              <p className="mb-1">{comment.content}</p>
-
-              {comment.images && comment.images.length > 0 && (
-                <div className="d-flex flex-wrap gap-2">
-                  {comment.images.map((url, idx) => (
+            <Form.Group controlId="imageUpload" className="mb-3">
+              <Form.Label>上传图片（最多 5 张）</Form.Label>
+              <Form.Control
+                type="file"
+                multiple
+                accept="image/*"
+                onChange={(e) => {
+                  const input = e.target as HTMLInputElement;
+                  const files = Array.from(input.files || []);
+                  if (files.length + selectedImages.length > 5) {
+                    alert("最多上传 5 张图片");
+                    return;
+                  }
+                  setSelectedImages((prev) => [...prev, ...files]);
+                }}
+              />
+              <div className="mt-2 d-flex flex-wrap gap-2">
+                {selectedImages.map((file, index) => (
+                  <div key={index} style={{ position: "relative" }}>
                     <Image
-                      key={idx}
-                      src={url}
+                      src={URL.createObjectURL(file)}
                       thumbnail
-                      width={100}
-                      height={100}
+                      width={80}
+                      height={80}
                       style={{ objectFit: "cover" }}
                     />
-                  ))}
+                    <Button
+                      variant="danger"
+                      size="sm"
+                      style={{
+                        position: "absolute",
+                        top: -5,
+                        right: -5,
+                        borderRadius: "50%",
+                      }}
+                      onClick={() =>
+                        setSelectedImages((prev) =>
+                          prev.filter((_, i) => i !== index)
+                        )
+                      }
+                    >
+                      ×
+                    </Button>
+                  </div>
+                ))}
+              </div>
+            </Form.Group>
+
+            <div className="d-flex justify-content-end">
+              <Button
+                variant="primary"
+                type="submit"
+                disabled={!newComment.trim() && selectedImages.length === 0}
+              >
+                发表评论
+              </Button>
+            </div>
+          </Form>
+
+          <ListGroup variant="flush" className="mt-3">
+            {comments.map((comment) => (
+              <ListGroup.Item key={comment.id} className="py-3">
+                <div className="d-flex justify-content-between align-items-start mb-2">
+                  <div className="d-flex align-items-center gap-2">
+                    <Image
+                      src={comment.avatar_url}
+                      width={32}
+                      height={32}
+                      roundedCircle
+                      style={{
+                        aspectRatio: "1/1",
+                        objectFit: "cover",
+                      }}
+                      alt="avatar"
+                    />
+                    <strong>{comment.name}</strong>
+                  </div>
+                  <div className="d-flex align-items-center gap-2">
+                    <small className="text-muted">
+                      {comment.created_at.slice(0, 19).replace("T", " ")}
+                    </small>
+                    {comment.user_id === currentUserId && (
+                      <Button
+                        size="sm"
+                        variant="outline-danger"
+                        onClick={() => handleDelete(comment.id)}
+                      >
+                        删除
+                      </Button>
+                    )}
+                  </div>
                 </div>
-              )}
-            </ListGroup.Item>
-          ))}
-        </ListGroup>
-      </Card.Body>
-    </Card>
+                <p className="mb-1">{comment.content}</p>
+
+                {comment.images && comment.images.length > 0 && (
+                  <div className="d-flex flex-wrap gap-2">
+                    {comment.images.map((url, idx) => (
+                      <Image
+                        key={idx}
+                        src={url}
+                        thumbnail
+                        width={100}
+                        height={100}
+                        onClick={() => handleImageClick(url)}
+                      />
+                    ))}
+                  </div>
+                )}
+              </ListGroup.Item>
+            ))}
+          </ListGroup>
+        </Card.Body>
+      </Card>
+      <ImageModal
+        show={showModal}
+        onHide={() => setShowModal(false)}
+        imgUrl={selectedImg}
+      />
+    </div>
   );
 }

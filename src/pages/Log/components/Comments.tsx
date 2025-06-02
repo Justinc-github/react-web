@@ -174,10 +174,13 @@ export default function Comments() {
                 <div className="d-flex align-items-center">
                   <Image
                     src={comment.avatar_url}
-                    roundedCircle
                     width={32}
                     height={32}
-                    className="me-2"
+                    style={{
+                      aspectRatio: "1/1",
+                      objectFit: "cover", 
+                    }}
+                    roundedCircle
                     alt="avatar"
                   />
                   <strong>{comment.name}</strong>

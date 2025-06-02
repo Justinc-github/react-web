@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { Button, Card, Form, ListGroup, Image } from "react-bootstrap";
 import { useLocation } from "react-router-dom";
-import { supabase } from "../../Auth/utils/supabaseClient"; // 路径请根据项目调整
+import { supabase } from "../../Auth/utils/supabaseClient";
 
 interface Comment {
   id: number;
@@ -10,6 +10,7 @@ interface Comment {
   created_at: string;
   avatar_url: string;
   user_id: string;
+  images?: string[];
 }
 
 export default function Comments() {
@@ -20,10 +21,8 @@ export default function Comments() {
   const [comments, setComments] = useState<Comment[]>([]);
   const [newComment, setNewComment] = useState("");
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
-  const [userInfo, setUserInfo] = useState<{
-    name: string;
-    avatar_url: string;
-  }>({
+  const [selectedImages, setSelectedImages] = useState<File[]>([]);
+  const [userInfo, setUserInfo] = useState({
     name: "未登录用户",
     avatar_url: "https://img.picgo.net/2025/05/05/touxiange48491887ed787ed.jpg",
   });
@@ -61,14 +60,25 @@ export default function Comments() {
     const res = await fetch(
       `https://api.zhongzhi.site/comments?content_id=${contentId}`
     );
-    const data = await res.json();
 
+    const data = await res.json();
+    console.log(data.data);
     if (Array.isArray(data.data)) {
       const sorted = data.data
         .slice()
         .sort((a: Comment, b: Comment) =>
           b.created_at.localeCompare(a.created_at)
-        );
+        )
+        .map((item: Comment) => ({
+          ...item,
+          images: Array.isArray(item.images)
+            ? item.images.map((url) => `https://api.zhongzhi.site${url}`) // 为每个URL添加前缀
+            : typeof item.images === "string"
+            ? JSON.parse(item.images || "[]").map(
+                (url: string) => `https://api.zhongzhi.site${url}`
+              ) // 解析后添加前缀
+            : [],
+        }));
       setComments(sorted);
     }
   }, [contentId]);
@@ -80,13 +90,25 @@ export default function Comments() {
   const handleCommentSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!newComment.trim()) return;
+    if (!newComment.trim() && selectedImages.length === 0) return;
 
     if (!currentUserId) {
       alert("请先登录再发表评论！");
       return;
     }
-    console.log("supabase user:", currentUserId);
+
+    const imageUrls: string[] = [];
+
+    for (let i = 0; i < selectedImages.length; i++) {
+      const file = selectedImages[i];
+      try {
+        const url = await uploadCommentImage(file);
+        imageUrls.push(url);
+      } catch (error) {
+        alert(`第 ${i + 1} 张图片上传失败: ${(error as Error).message}`);
+        return;
+      }
+    }
 
     const commentData = {
       content: newComment,
@@ -94,8 +116,9 @@ export default function Comments() {
       avatar_url: userInfo.avatar_url,
       content_id: contentId,
       user_id: currentUserId,
+      images: imageUrls,
     };
-    
+
     await fetch("https://api.zhongzhi.site/comments/insert", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -103,11 +126,10 @@ export default function Comments() {
     });
 
     setNewComment("");
+    setSelectedImages([]);
     loadComments();
   };
-  
 
-  // 删除评论
   const handleDelete = async (commentId: number) => {
     if (!window.confirm("确定删除该评论？")) return;
 
@@ -128,12 +150,31 @@ export default function Comments() {
     loadComments();
   };
 
-  // 快捷发送评论
   const handleKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === "Enter" && !e.shiftKey && !e.ctrlKey) {
       e.preventDefault();
       handleCommentSubmit(e);
     }
+  };
+
+  const uploadCommentImage = async (imageFile: File) => {
+    const formData = new FormData();
+    formData.append("file", imageFile);
+
+    const response = await fetch(
+      "https://api.zhongzhi.site/comments/upload-image",
+      {
+        method: "POST",
+        body: formData,
+      }
+    );
+
+    if (!response.ok) {
+      throw new Error("图片上传失败");
+    }
+
+    const data = await response.json();
+    return data.url; // 返回图片的访问 URL
   };
 
   return (
@@ -156,11 +197,60 @@ export default function Comments() {
               placeholder="请输入您的评论..."
             />
           </Form.Group>
+
+          <Form.Group controlId="imageUpload" className="mb-3">
+            <Form.Label>上传图片（最多 5 张）</Form.Label>
+            <Form.Control
+              type="file"
+              multiple
+              accept="image/*"
+              onChange={(e) => {
+                const input = e.target as HTMLInputElement;
+                const files = Array.from(input.files || []);
+                if (files.length + selectedImages.length > 5) {
+                  alert("最多上传 5 张图片");
+                  return;
+                }
+                setSelectedImages((prev) => [...prev, ...files]);
+              }}
+            />
+            <div className="mt-2 d-flex flex-wrap gap-2">
+              {selectedImages.map((file, index) => (
+                <div key={index} style={{ position: "relative" }}>
+                  <Image
+                    src={URL.createObjectURL(file)}
+                    thumbnail
+                    width={80}
+                    height={80}
+                    style={{ objectFit: "cover" }}
+                  />
+                  <Button
+                    variant="danger"
+                    size="sm"
+                    style={{
+                      position: "absolute",
+                      top: -5,
+                      right: -5,
+                      borderRadius: "50%",
+                    }}
+                    onClick={() =>
+                      setSelectedImages((prev) =>
+                        prev.filter((_, i) => i !== index)
+                      )
+                    }
+                  >
+                    ×
+                  </Button>
+                </div>
+              ))}
+            </div>
+          </Form.Group>
+
           <div className="d-flex justify-content-end">
             <Button
               variant="primary"
               type="submit"
-              disabled={!newComment.trim()}
+              disabled={!newComment.trim() && selectedImages.length === 0}
             >
               发表评论
             </Button>
@@ -171,16 +261,16 @@ export default function Comments() {
           {comments.map((comment) => (
             <ListGroup.Item key={comment.id} className="py-3">
               <div className="d-flex justify-content-between align-items-start mb-2">
-                <div className="d-flex align-items-center">
+                <div className="d-flex align-items-center gap-2">
                   <Image
                     src={comment.avatar_url}
                     width={32}
                     height={32}
+                    roundedCircle
                     style={{
                       aspectRatio: "1/1",
-                      objectFit: "cover", 
+                      objectFit: "cover",
                     }}
-                    roundedCircle
                     alt="avatar"
                   />
                   <strong>{comment.name}</strong>
@@ -200,7 +290,22 @@ export default function Comments() {
                   )}
                 </div>
               </div>
-              <p className="mb-0">{comment.content}</p>
+              <p className="mb-1">{comment.content}</p>
+
+              {comment.images && comment.images.length > 0 && (
+                <div className="d-flex flex-wrap gap-2">
+                  {comment.images.map((url, idx) => (
+                    <Image
+                      key={idx}
+                      src={url}
+                      thumbnail
+                      width={100}
+                      height={100}
+                      style={{ objectFit: "cover" }}
+                    />
+                  ))}
+                </div>
+              )}
             </ListGroup.Item>
           ))}
         </ListGroup>

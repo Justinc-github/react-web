@@ -62,7 +62,7 @@ export default function Comments() {
     );
 
     const data = await res.json();
-    console.log(data.data);
+    // console.log(data.data);
     if (Array.isArray(data.data)) {
       const sorted = data.data
         .slice()

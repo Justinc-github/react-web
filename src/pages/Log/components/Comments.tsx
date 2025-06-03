@@ -3,6 +3,7 @@ import { Button, Card, Form, ListGroup, Image } from "react-bootstrap";
 import { useLocation } from "react-router-dom";
 import { supabase } from "../../Auth/utils/supabaseClient";
 import ImageModal from "../../../utils/ImageModal";
+import { FaReply, FaRegThumbsUp, FaThumbsUp } from "react-icons/fa";
 
 interface Comment {
   id: number;
@@ -12,6 +13,10 @@ interface Comment {
   avatar_url: string;
   user_id: string;
   images?: string[];
+  parent_id?: number | null;
+  replies: Comment[];
+  number_likes: number;
+  liked?: boolean;
 }
 
 export default function Comments() {
@@ -27,25 +32,40 @@ export default function Comments() {
     name: "未登录用户",
     avatar_url: "https://img.picgo.net/2025/05/05/touxiange48491887ed787ed.jpg",
   });
+  const [replyingTo, setReplyingTo] = useState<{
+    id: number;
+    name: string;
+  } | null>(null);
 
   const [showModal, setShowModal] = useState(false);
   const [selectedImg, setSelectedImg] = useState("");
+
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+
   const handleImageClick = (imgUrl: string) => {
     setSelectedImg(imgUrl);
     setShowModal(true);
   };
 
-  // 添加文件输入框的引用
-  const fileInputRef = useRef<HTMLInputElement>(null);
-
-  // 模拟点击隐藏的文件输入框
-  const handleImageUploadClick = () => {
-    if (fileInputRef.current) {
-      fileInputRef.current.click();
+  const adjustTextareaHeight = () => {
+    if (textareaRef.current) {
+      textareaRef.current.style.height = "auto";
+      textareaRef.current.style.height = `${Math.min(
+        textareaRef.current.scrollHeight,
+        300
+      )}px`;
     }
   };
 
-  // 获取当前用户信息
+  const handleTextChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    setNewComment(e.target.value);
+    setTimeout(adjustTextareaHeight, 0);
+  };
+
+  useEffect(() => {
+    adjustTextareaHeight();
+  }, []);
+
   useEffect(() => {
     const getUserInfo = async () => {
       const {
@@ -73,34 +93,145 @@ export default function Comments() {
     getUserInfo();
   }, [userInfo.avatar_url]);
 
-  // 加载评论
   const loadComments = useCallback(async () => {
-    const res = await fetch(
-      `https://api.zhongzhi.site/comments?content_id=${contentId}`
-    );
+    try {
+      const res = await fetch(
+        `https://api.zhongzhi.site/comments?content_id=${contentId}`
+      );
 
-    const data = await res.json();
-    if (Array.isArray(data.data)) {
-      const sorted = data.data
-        .slice()
-        .sort((a: Comment, b: Comment) =>
-          b.created_at.localeCompare(a.created_at)
-        )
-        .map((item: Comment) => ({
-          ...item,
-          images: Array.isArray(item.images)
-            ? item.images.map((url) => `${url}`)
-            : typeof item.images === "string"
-            ? JSON.parse(item.images || "[]").map((url: string) => `${url}`)
-            : [],
-        }));
-      setComments(sorted);
+      const data = await res.json();
+      if (Array.isArray(data.data)) {
+        const sorted = data.data
+          .slice()
+          .sort((a: Comment, b: Comment) =>
+            b.created_at.localeCompare(a.created_at)
+          )
+          .map((item: Comment) => ({
+            ...item,
+            images: Array.isArray(item.images)
+              ? item.images.map((url) => `${url}`)
+              : typeof item.images === "string"
+              ? JSON.parse(item.images || "[]").map((url: string) => `${url}`)
+              : [],
+            liked: false, // Initially not liked
+          }));
+
+        setComments(sorted);
+      }
+    } catch (error) {
+      console.error("加载评论失败:", error);
     }
   }, [contentId]);
 
   useEffect(() => {
     loadComments();
   }, [loadComments]);
+
+  const handleReplyClick = (commentId: number, userName: string) => {
+    setReplyingTo({ id: commentId, name: userName });
+    if (textareaRef.current) {
+      textareaRef.current.focus();
+    }
+  };
+
+  const cancelReply = () => {
+    setReplyingTo(null);
+  };
+
+  const handleLikeClick = async (commentId: number, currentLikes: number) => {
+  if (!currentUserId) {
+    alert("请先登录再点赞评论！");
+    return;
+  }
+
+  try {
+    // 1. 先保存原始点赞状态，用于出错时恢复
+    const wasLiked = comments.find(c => 
+      c.id === commentId || c.replies?.some(r => r.id === commentId)
+    )?.liked;
+
+    // 2. 更新前端状态提供即时反馈
+    setComments(prevComments =>
+      prevComments.map(comment => {
+        if (comment.id === commentId) {
+          return {
+            ...comment,
+            number_likes: wasLiked ? currentLikes - 1 : currentLikes + 1,
+            liked: !wasLiked,
+          };
+        }
+
+        // 检查回复
+        if (comment.replies) {
+          const updatedReplies = comment.replies.map(reply => {
+            if (reply.id === commentId) {
+              return {
+                ...reply,
+                number_likes: wasLiked ? currentLikes - 1 : currentLikes + 1,
+                liked: !wasLiked,
+              };
+            }
+            return reply;
+          });
+          return { ...comment, replies: updatedReplies };
+        }
+
+        return comment;
+      })
+    );
+
+    // 3. 正确计算新的点赞数
+    const newLikes = wasLiked ? currentLikes - 1 : currentLikes + 1;
+
+    // 4. 发送更新请求到后端 - 使用正确计算的新点赞数
+    const response = await fetch(
+      "https://api.zhongzhi.site/comments/update_likes",
+      {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          id: commentId,
+          likes: newLikes, // 使用正确的新点赞数
+        }),
+      }
+    );
+
+    if (!response.ok) {
+      throw new Error("点赞更新失败");
+    }
+  } catch (error) {
+    console.error("点赞操作失败:", error);
+    
+    // 5. 恢复原始状态（在真实应用中可能需要刷新数据）
+    setComments(prevComments => 
+      prevComments.map(comment => {
+        if (comment.id === commentId) {
+          return {
+            ...comment,
+            number_likes: currentLikes,
+            liked: !comment.liked, // 恢复原始状态
+          };
+        }
+        
+        if (comment.replies) {
+          const updatedReplies = comment.replies.map(reply => {
+            if (reply.id === commentId) {
+              return {
+                ...reply,
+                number_likes: currentLikes,
+                liked: !reply.liked, // 恢复原始状态
+              };
+            }
+            return reply;
+          });
+          return { ...comment, replies: updatedReplies };
+        }
+        
+        return comment;
+      })
+    );
+  }
+};
 
   const handleCommentSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -126,12 +257,15 @@ export default function Comments() {
     }
 
     const commentData = {
-      content: newComment,
+      content: replyingTo
+        ? `回复 @${replyingTo.name}: ${newComment}`
+        : newComment,
       name: userInfo.name,
       avatar_url: userInfo.avatar_url,
       content_id: contentId,
       user_id: currentUserId,
       images: imageUrls,
+      parent_id: replyingTo?.id || null,
     };
 
     await fetch("https://api.zhongzhi.site/comments/insert", {
@@ -142,33 +276,37 @@ export default function Comments() {
 
     setNewComment("");
     setSelectedImages([]);
+    setReplyingTo(null);
+
+    if (textareaRef.current) {
+      textareaRef.current.style.height = "auto";
+    }
+
     loadComments();
   };
 
   const handleDelete = async (commentId: number) => {
     if (!window.confirm("确定删除该评论？")) return;
 
-    const response = await fetch("https://api.zhongzhi.site/comments/delete", {
-      method: "DELETE",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        comment_id: commentId,
-        user_id: currentUserId,
-      }),
-    });
+    try {
+      const response = await fetch("https://api.zhongzhi.site/comments/delete", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          comment_id: commentId,
+          user_id: currentUserId,
+        }),
+      });
 
-    if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.detail || "删除失败");
-    }
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.detail || "删除失败");
+      }
 
-    loadComments();
-  };
-
-  const handleKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter" && !e.shiftKey && !e.ctrlKey) {
-      e.preventDefault();
-      handleCommentSubmit(e);
+      loadComments();
+    } catch (error) {
+      console.error("删除评论失败:", error);
+      alert("删除评论失败，请重试");
     }
   };
 
@@ -192,6 +330,123 @@ export default function Comments() {
     return data.url;
   };
 
+  const handleKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter" && !e.shiftKey && !e.ctrlKey) {
+      e.preventDefault();
+      handleCommentSubmit(e);
+    }
+  };
+
+  // 渲染评论及其回复
+  const renderCommentWithReplies = (comment: Comment) => {
+    const isReply = comment.parent_id !== null;
+
+    return (
+      <div
+        key={comment.id}
+        className={`py-3 border-bottom ${
+          isReply ? "reply-comment pl-4 border-left ml-4" : ""
+        }`}
+      >
+        <div className="d-flex justify-content-between align-items-start mb-2">
+          <div className="d-flex align-items-center gap-2">
+            <Image
+              src={comment.avatar_url}
+              width={40}
+              height={40}
+              roundedCircle
+              style={{ aspectRatio: "1/1", objectFit: "cover" }}
+              onClick={() => handleImageClick(comment.avatar_url)}
+              alt="头像"
+            />
+            <div>
+              <strong>{comment.name}</strong>
+              <small className="text-muted d-block">
+                {new Date(comment.created_at).toLocaleString("zh-CN", {
+                  year: "numeric",
+                  month: "2-digit",
+                  day: "2-digit",
+                  hour: "2-digit",
+                  minute: "2-digit",
+                })}
+              </small>
+            </div>
+          </div>
+          {comment.user_id === currentUserId && (
+            <Button
+              size="sm"
+              variant="outline-danger"
+              className="rounded-pill"
+              onClick={() => handleDelete(comment.id)}
+            >
+              删除
+            </Button>
+          )}
+        </div>
+
+        {/* 回复用户显示 */}
+        {/* {comment.parent_id && (
+          <div className="mb-2 text-primary">
+            <small>回复 @{comment.parent_id}</small>
+          </div>
+        )} */}
+
+        <p className="mb-2">{comment.content}</p>
+
+        {/* 点赞和回复操作 */}
+        <div className="d-flex align-items-center gap-2 mb-2">
+          <Button
+            variant="link"
+            className="p-0 text-muted"
+            onClick={() => handleLikeClick(comment.id, comment.number_likes)}
+          >
+            {comment.liked ? (
+              <FaThumbsUp className="text-primary" />
+            ) : (
+              <FaRegThumbsUp />
+            )}
+            <span className="ms-1">{comment.number_likes}</span>
+          </Button>
+
+          <Button
+            variant="link"
+            className="p-0 text-muted"
+            onClick={() => handleReplyClick(comment.id, comment.name)}
+          >
+            <FaReply /> <span className="ms-1">回复</span>
+          </Button>
+        </div>
+
+        {comment.images && comment.images.length > 0 && (
+          <div className="d-flex flex-wrap gap-2">
+            {comment.images.map((url, idx) => (
+              <div
+                key={idx}
+                style={{ cursor: "pointer" }}
+                onClick={() => handleImageClick(url)}
+              >
+                <Image
+                  src={url}
+                  thumbnail
+                  width={100}
+                  height={100}
+                  style={{ objectFit: "cover", aspectRatio: "1/1" }}
+                />
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* 显示回复 */}
+        {comment.replies && comment.replies.length > 0 && (
+          <div className="mt-3">
+            {comment.replies.map((reply) => renderCommentWithReplies(reply))}
+          </div>
+        )}
+      </div>
+    );
+  };
+
   return (
     <div>
       <Card
@@ -209,54 +464,94 @@ export default function Comments() {
                 width={32}
                 height={32}
                 roundedCircle
-                style={{
-                  aspectRatio: "1/1",
-                  objectFit: "cover",
-                }}
+                style={{ aspectRatio: "1/1", objectFit: "cover" , marginTop: '10px'}}
                 alt="头像"
               />
               <Form.Group
                 controlId="commentForm"
                 className="mb-3 flex-grow-1 position-relative"
               >
+                {replyingTo && (
+                  <div className="d-flex justify-content-between align-items-center mb-2 bg-light p-2 rounded">
+                    <small className="text-primary">
+                      回复 @{replyingTo.name}
+                    </small>
+                    <Button
+                      variant="link"
+                      className="p-0 text-danger"
+                      onClick={cancelReply}
+                    >
+                      取消回复
+                    </Button>
+                  </div>
+                )}
+
                 <Form.Control
                   className="rounded-3"
                   as="textarea"
-                  rows={1}
+                  ref={textareaRef}
                   value={newComment}
-                  onChange={(e) => setNewComment(e.target.value)}
+                  onChange={handleTextChange}
                   onKeyDown={handleKeyPress}
-                  placeholder="请输入您的评论...(每次最多上传50张图片)"
-                  style={{ paddingRight: "40px" }} // 为按钮留出空间
+                  placeholder={
+                    replyingTo
+                      ? `回复 @${replyingTo.name}...`
+                      : "请输入您的评论...(每次最多上传50张图片)"
+                  }
+                  style={{
+                    paddingRight: "40px", // 为图标预留空间
+                    minHeight: "20px",
+                    maxHeight: "300px",
+                    resize: "none",
+                    overflowY: "auto",
+                  }}
                 />
-                {/* 图片上传图标按钮 */}
-                <Button
-                  variant="link"
-                  className="position-absolute end-0 bottom-0 p-2"
-                  onClick={handleImageUploadClick}
-                  title="上传图片"
-                  style={{ zIndex: 5, color: "#6c757d" }}
+
+                {/* 上传按钮 - 绝对定位在输入框内 */}
+                <div
+                  className="position-absolute top-50"
+                  style={{
+                    right: "10px",
+                    transform: "translateY(-50%)",
+                    zIndex: 5,
+                  }}
                 >
-                  <img
-                    src="https://img.picgo.net/2025/06/03/838aebce94497c07620ca2ea839a3a4675e71a89eda4731a.png"
-                    alt="上传图片"
+                  <Button
+                    variant="light"
+                    className="rounded-pill p-1 border-0"
+                    onClick={() =>
+                      document.getElementById("fileInput")?.click()
+                    }
                     style={{
-                      width: "24px",
-                      height: "24px",
+                      background: "none",
                     }}
-                  />
-                </Button>
+                  >
+                    <img
+                      src="https://img.picgo.net/2025/06/03/838aebce94497c07620ca2ea839a3a4675e71a89eda4731a.png"
+                      alt="上传图片"
+                      style={{
+                        width: "24px",
+                        height: "24px",
+                        opacity: "0.7",
+                        transition: "opacity 0.2s",
+                      }}
+                      onMouseOver={(e) => (e.currentTarget.style.opacity = "1")}
+                      onMouseOut={(e) =>
+                        (e.currentTarget.style.opacity = "0.7")
+                      }
+                    />
+                  </Button>
+                </div>
               </Form.Group>
             </div>
 
             <Form.Group controlId="imageUpload" className="mb-3">
-              <Form.Label className="d-none">上传图片</Form.Label>
-              <Form.Control
-                ref={fileInputRef}
+              <input
                 type="file"
                 multiple
                 accept="image/*"
-                className="d-none" // 隐藏原始文件输入框
+                className="d-none"
+                id="fileInput"
                 onChange={(e) => {
                   const input = e.target as HTMLInputElement;
                   const files = Array.from(input.files || []);
@@ -267,124 +562,61 @@ export default function Comments() {
                   setSelectedImages((prev) => [...prev, ...files]);
                 }}
               />
-
-              {/* 已选图片预览 */}
-              {selectedImages.length > 0 && (
-                <div className="mt-3">
-                  <p className="text-muted mb-1">
-                    已选图片 ({selectedImages.length}/50):
-                  </p>
-                  <div className="d-flex flex-wrap gap-2 border rounded p-2">
-                    {selectedImages.map((file, index) => (
-                      <div key={index} style={{ position: "relative" }}>
-                        <Image
-                          src={URL.createObjectURL(file)}
-                          thumbnail
-                          width={80}
-                          height={80}
-                          style={{ objectFit: "cover" }}
-                          className="rounded-2"
-                        />
-                        <Button
-                          variant="danger"
-                          size="sm"
-                          className="position-absolute top-0 end-0"
-                          style={{
-                            transform: "translate(30%, -30%)",
-                            borderRadius: "50%",
-                            padding: "0.15rem 0.35rem",
-                          }}
-                          onClick={() =>
-                            setSelectedImages((prev) =>
-                              prev.filter((_, i) => i !== index)
-                            )
-                          }
-                        >
-                          ×
-                        </Button>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
             </Form.Group>
 
-            <div className="d-flex justify-content-end">
+            {selectedImages.length > 0 && (
+              <div className="mt-3">
+                <p className="text-muted mb-1">
+                  已选图片 ({selectedImages.length}/50):
+                </p>
+                <div className="d-flex flex-wrap gap-2 border rounded p-2">
+                  {selectedImages.map((file, index) => (
+                    <div key={index} style={{ position: "relative" }}>
+                      <Image
+                        src={URL.createObjectURL(file)}
+                        thumbnail
+                        width={80}
+                        height={80}
+                        style={{ objectFit: "cover" }}
+                        className="rounded-2"
+                      />
+                      <Button
+                        variant="danger"
+                        size="sm"
+                        className="position-absolute top-0 end-0"
+                        style={{
+                          transform: "translate(30%, -30%)",
+                          borderRadius: "50%",
+                          padding: "0.15rem 0.35rem",
+                        }}
+                        onClick={() =>
+                          setSelectedImages((prev) =>
+                            prev.filter((_, i) => i !== index)
+                          )
+                        }
+                      >
+                        ×
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            <div className="d-flex justify-content-end mt-3">
               <Button
                 variant="primary"
                 type="submit"
                 className="rounded-pill px-4"
                 disabled={!newComment.trim() && selectedImages.length === 0}
               >
-                发表评论
+                {replyingTo ? `回复 @${replyingTo.name}` : "发表评论"}
               </Button>
             </div>
           </Form>
 
           <ListGroup variant="flush" className="mt-3">
-            {comments.map((comment) => (
-              <ListGroup.Item key={comment.id} className="py-3 border-bottom">
-                <div className="d-flex justify-content-between align-items-start mb-2">
-                  <div className="d-flex align-items-center gap-2">
-                    <Image
-                      src={comment.avatar_url}
-                      width={40}
-                      height={40}
-                      roundedCircle
-                      style={{
-                        aspectRatio: "1/1",
-                        objectFit: "cover",
-                      }}
-                      onClick={() => handleImageClick(comment.avatar_url)}
-                      alt="头像"
-                    />
-                    <div>
-                      <strong>{comment.name}</strong>
-                      <small className="text-muted d-block">
-                        {new Date(comment.created_at).toLocaleString("zh-CN", {
-                          year: "numeric",
-                          month: "2-digit",
-                          day: "2-digit",
-                          hour: "2-digit",
-                          minute: "2-digit",
-                        })}
-                      </small>
-                    </div>
-                  </div>
-                  {comment.user_id === currentUserId && (
-                    <Button
-                      size="sm"
-                      variant="outline-danger"
-                      className="rounded-pill"
-                      onClick={() => handleDelete(comment.id)}
-                    >
-                      删除
-                    </Button>
-                  )}
-                </div>
-                <p className="mb-2">{comment.content}</p>
-
-                {comment.images && comment.images.length > 0 && (
-                  <div className="d-flex flex-wrap gap-2">
-                    {comment.images.map((url, idx) => (
-                      <div
-                        key={idx}
-                        style={{ cursor: "pointer" }}
-                        onClick={() => handleImageClick(url)}
-                      >
-                        <Image
-                          src={url}
-                          thumbnail
-                          width={100}
-                          height={100}
-                          style={{ objectFit: "cover", aspectRatio: "1/1" }}
-                        />
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </ListGroup.Item>
-            ))}
+            {comments.map((comment) => renderCommentWithReplies(comment))}
           </ListGroup>
         </Card.Body>
       </Card>
@@ -393,6 +625,31 @@ export default function Comments() {
         onHide={() => setShowModal(false)}
         imgUrl={selectedImg}
       />
+
+      <style>
+        {`
+          .reply-comment {
+            border-left: 3px solid #e9ecef;
+            padding-left: 1rem;
+            margin-left: 2rem;
+            position: relative;
+          }
+          
+          .reply-comment:before {
+            content: '';
+            position: absolute;
+            left: -1rem;
+            top: 2.5rem;
+            height: 1px;
+            width: 1rem;
+            border-top: 1px dashed #dee2e6;
+          }
+          
+          .btn-link.text-muted:hover {
+            text-decoration: none;
+          }
+        `}
+      </style>
     </div>
   );
 }

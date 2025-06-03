@@ -79,11 +79,11 @@ export default function Comments() {
         .map((item: Comment) => ({
           ...item,
           images: Array.isArray(item.images)
-            ? item.images.map((url) => `${url}`) // 为每个URL添加前缀
+            ? item.images.map((url) => `${url}`)
             : typeof item.images === "string"
             ? JSON.parse(item.images || "[]").map(
                 (url: string) => `${url}`
-              ) // 解析后添加前缀
+              ) 
             : [],
         }));
       setComments(sorted);
@@ -181,7 +181,7 @@ export default function Comments() {
     }
 
     const data = await response.json();
-    return data.url; // 返回图片的访问 URL
+    return data.url;
   };
 
   return (
@@ -195,19 +195,35 @@ export default function Comments() {
         </Card.Header>
         <Card.Body>
           <Form onSubmit={handleCommentSubmit}>
-            <Form.Group controlId="commentForm" className="mb-3">
-              <Form.Control
-                as="textarea"
-                rows={3}
-                value={newComment}
-                onChange={(e) => setNewComment(e.target.value)}
-                onKeyDown={handleKeyPress}
-                placeholder="请输入您的评论..."
+            <div className="d-flex align-items-start gap-2">
+              {" "}
+              {/* 添加此div作为Flex容器 */}
+              <Image
+                src={userInfo.avatar_url}
+                width={32}
+                height={32}
+                roundedCircle
+                style={{
+                  aspectRatio: "1/1",
+                  objectFit: "cover",
+                }}
+                alt="avatar"
               />
-            </Form.Group>
+              <Form.Group controlId="commentForm" className="mb-3  flex-grow-1">
+                <Form.Control
+                  className="rounded-3"
+                  as="textarea"
+                  rows={1}
+                  value={newComment}
+                  onChange={(e) => setNewComment(e.target.value)}
+                  onKeyDown={handleKeyPress}
+                  placeholder="请输入您的评论..."
+                />
+              </Form.Group>
+            </div>
 
             <Form.Group controlId="imageUpload" className="mb-3">
-              <Form.Label>上传图片</Form.Label>
+              <Form.Label>上传图片(一次最多十张)</Form.Label>
               <Form.Control
                 type="file"
                 multiple
@@ -215,8 +231,8 @@ export default function Comments() {
                 onChange={(e) => {
                   const input = e.target as HTMLInputElement;
                   const files = Array.from(input.files || []);
-                  if (files.length + selectedImages.length > 5) {
-                    alert("最多上传 5 张图片");
+                  if (files.length + selectedImages.length > 10) {
+                    alert("最多上传 10 张图片");
                     return;
                   }
                   setSelectedImages((prev) => [...prev, ...files]);
@@ -279,6 +295,7 @@ export default function Comments() {
                         aspectRatio: "1/1",
                         objectFit: "cover",
                       }}
+                      onClick={() => handleImageClick(comment.avatar_url)}
                       alt="avatar"
                     />
                     <strong>{comment.name}</strong>
@@ -309,11 +326,7 @@ export default function Comments() {
                         thumbnail
                         width={100}
                         height={100}
-                        onClick={() =>
-                          handleImageClick(
-                            url
-                          )
-                        }
+                        onClick={() => handleImageClick(url)}
                       />
                     ))}
                   </div>

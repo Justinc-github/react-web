@@ -79,10 +79,10 @@ export default function Comments() {
         .map((item: Comment) => ({
           ...item,
           images: Array.isArray(item.images)
-            ? item.images.map((url) => `https://api.zhongzhi.site${url}`) // 为每个URL添加前缀
+            ? item.images.map((url) => `${url}`) // 为每个URL添加前缀
             : typeof item.images === "string"
             ? JSON.parse(item.images || "[]").map(
-                (url: string) => `https://api.zhongzhi.site${url}`
+                (url: string) => `${url}`
               ) // 解析后添加前缀
             : [],
         }));
@@ -207,7 +207,7 @@ export default function Comments() {
             </Form.Group>
 
             <Form.Group controlId="imageUpload" className="mb-3">
-              <Form.Label>上传图片（最多 5 张）</Form.Label>
+              <Form.Label>上传图片</Form.Label>
               <Form.Control
                 type="file"
                 multiple
@@ -309,7 +309,11 @@ export default function Comments() {
                         thumbnail
                         width={100}
                         height={100}
-                        onClick={() => handleImageClick(url)}
+                        onClick={() =>
+                          handleImageClick(
+                            url
+                          )
+                        }
                       />
                     ))}
                   </div>

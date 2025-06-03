@@ -226,7 +226,7 @@ export default function Comments() {
                   value={newComment}
                   onChange={(e) => setNewComment(e.target.value)}
                   onKeyDown={handleKeyPress}
-                  placeholder="请输入您的评论..."
+                  placeholder="请输入您的评论...(每次最多上传50张图片)"
                   style={{ paddingRight: "40px" }} // 为按钮留出空间
                 />
                 {/* 图片上传图标按钮 */}
@@ -260,8 +260,8 @@ export default function Comments() {
                 onChange={(e) => {
                   const input = e.target as HTMLInputElement;
                   const files = Array.from(input.files || []);
-                  if (files.length + selectedImages.length > 10) {
-                    alert("最多上传 10 张图片");
+                  if (files.length + selectedImages.length > 50) {
+                    alert("最多上传 50 张图片");
                     return;
                   }
                   setSelectedImages((prev) => [...prev, ...files]);
@@ -272,7 +272,7 @@ export default function Comments() {
               {selectedImages.length > 0 && (
                 <div className="mt-3">
                   <p className="text-muted mb-1">
-                    已选图片 ({selectedImages.length}/10):
+                    已选图片 ({selectedImages.length}/50):
                   </p>
                   <div className="d-flex flex-wrap gap-2 border rounded p-2">
                     {selectedImages.map((file, index) => (

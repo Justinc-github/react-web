@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useState, useRef } from "react";
 import { Button, Card, Form, ListGroup, Image } from "react-bootstrap";
 import { useLocation } from "react-router-dom";
 import { supabase } from "../../Auth/utils/supabaseClient";
@@ -18,7 +18,7 @@ export default function Comments() {
   const location = useLocation();
   const searchParams = new URLSearchParams(location.search);
   const contentId = searchParams.get("id") || "0";
- 
+
   const [comments, setComments] = useState<Comment[]>([]);
   const [newComment, setNewComment] = useState("");
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
@@ -34,6 +34,17 @@ export default function Comments() {
     setSelectedImg(imgUrl);
     setShowModal(true);
   };
+
+  // 添加文件输入框的引用
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // 模拟点击隐藏的文件输入框
+  const handleImageUploadClick = () => {
+    if (fileInputRef.current) {
+      fileInputRef.current.click();
+    }
+  };
+
   // 获取当前用户信息
   useEffect(() => {
     const getUserInfo = async () => {
@@ -69,7 +80,6 @@ export default function Comments() {
     );
 
     const data = await res.json();
-    // console.log(data.data);
     if (Array.isArray(data.data)) {
       const sorted = data.data
         .slice()
@@ -81,9 +91,7 @@ export default function Comments() {
           images: Array.isArray(item.images)
             ? item.images.map((url) => `${url}`)
             : typeof item.images === "string"
-            ? JSON.parse(item.images || "[]").map(
-                (url: string) => `${url}`
-              ) 
+            ? JSON.parse(item.images || "[]").map((url: string) => `${url}`)
             : [],
         }));
       setComments(sorted);
@@ -196,8 +204,6 @@ export default function Comments() {
         <Card.Body>
           <Form onSubmit={handleCommentSubmit}>
             <div className="d-flex align-items-start gap-2">
-              {" "}
-              {/* 添加此div作为Flex容器 */}
               <Image
                 src={userInfo.avatar_url}
                 width={32}
@@ -207,9 +213,12 @@ export default function Comments() {
                   aspectRatio: "1/1",
                   objectFit: "cover",
                 }}
-                alt="avatar"
+                alt="头像"
               />
-              <Form.Group controlId="commentForm" className="mb-3  flex-grow-1">
+              <Form.Group
+                controlId="commentForm"
+                className="mb-3 flex-grow-1 position-relative"
+              >
                 <Form.Control
                   className="rounded-3"
                   as="textarea"
@@ -218,16 +227,38 @@ export default function Comments() {
                   onChange={(e) => setNewComment(e.target.value)}
                   onKeyDown={handleKeyPress}
                   placeholder="请输入您的评论..."
+                  style={{ paddingRight: "40px" }} // 为按钮留出空间
                 />
+                {/* 图片上传图标按钮 */}
+                <Button
+                  variant="link"
+                  className="position-absolute end-0 bottom-0 p-2"
+                  onClick={handleImageUploadClick}
+                  title="上传图片"
+                  style={{ zIndex: 5, color: "#6c757d" }}
+                >
+                  <img
+                    src="https://img.picgo.net/2025/06/03/838aebce94497c07620ca2ea839a3a4675e71a89eda4731a.png"
+                    alt="上传图片"
+                    style={{
+                      width: "24px",
+                      height: "24px",
+                      // filter: "invert(50%)",
+                    }}
+                  />
+                </Button>
               </Form.Group>
             </div>
 
+            {/* 隐藏的文件输入框 */}
             <Form.Group controlId="imageUpload" className="mb-3">
-              <Form.Label>上传图片(一次最多十张)</Form.Label>
+              <Form.Label className="d-none">上传图片</Form.Label>
               <Form.Control
+                ref={fileInputRef}
                 type="file"
                 multiple
                 accept="image/*"
+                className="d-none" // 隐藏原始文件输入框
                 onChange={(e) => {
                   const input = e.target as HTMLInputElement;
                   const files = Array.from(input.files || []);
@@ -238,42 +269,53 @@ export default function Comments() {
                   setSelectedImages((prev) => [...prev, ...files]);
                 }}
               />
-              <div className="mt-2 d-flex flex-wrap gap-2">
-                {selectedImages.map((file, index) => (
-                  <div key={index} style={{ position: "relative" }}>
-                    <Image
-                      src={URL.createObjectURL(file)}
-                      thumbnail
-                      width={80}
-                      height={80}
-                      style={{ objectFit: "cover" }}
-                    />
-                    <Button
-                      variant="danger"
-                      size="sm"
-                      style={{
-                        position: "absolute",
-                        top: -5,
-                        right: -5,
-                        borderRadius: "50%",
-                      }}
-                      onClick={() =>
-                        setSelectedImages((prev) =>
-                          prev.filter((_, i) => i !== index)
-                        )
-                      }
-                    >
-                      ×
-                    </Button>
+
+              {/* 已选图片预览 */}
+              {selectedImages.length > 0 && (
+                <div className="mt-3">
+                  <p className="text-muted mb-1">
+                    已选图片 ({selectedImages.length}/10):
+                  </p>
+                  <div className="d-flex flex-wrap gap-2 border rounded p-2">
+                    {selectedImages.map((file, index) => (
+                      <div key={index} style={{ position: "relative" }}>
+                        <Image
+                          src={URL.createObjectURL(file)}
+                          thumbnail
+                          width={80}
+                          height={80}
+                          style={{ objectFit: "cover" }}
+                          className="rounded-2"
+                        />
+                        <Button
+                          variant="danger"
+                          size="sm"
+                          className="position-absolute top-0 end-0"
+                          style={{
+                            transform: "translate(30%, -30%)",
+                            borderRadius: "50%",
+                            padding: "0.15rem 0.35rem",
+                          }}
+                          onClick={() =>
+                            setSelectedImages((prev) =>
+                              prev.filter((_, i) => i !== index)
+                            )
+                          }
+                        >
+                          ×
+                        </Button>
+                      </div>
+                    ))}
                   </div>
-                ))}
-              </div>
+                </div>
+              )}
             </Form.Group>
 
             <div className="d-flex justify-content-end">
               <Button
                 variant="primary"
                 type="submit"
+                className="rounded-pill px-4"
                 disabled={!newComment.trim() && selectedImages.length === 0}
               >
                 发表评论
@@ -283,51 +325,63 @@ export default function Comments() {
 
           <ListGroup variant="flush" className="mt-3">
             {comments.map((comment) => (
-              <ListGroup.Item key={comment.id} className="py-3">
+              <ListGroup.Item key={comment.id} className="py-3 border-bottom">
                 <div className="d-flex justify-content-between align-items-start mb-2">
                   <div className="d-flex align-items-center gap-2">
                     <Image
                       src={comment.avatar_url}
-                      width={32}
-                      height={32}
+                      width={40}
+                      height={40}
                       roundedCircle
                       style={{
                         aspectRatio: "1/1",
                         objectFit: "cover",
                       }}
-                      onClick={() => handleImageClick(comment.avatar_url)}
-                      alt="avatar"
+                      alt="头像"
                     />
-                    <strong>{comment.name}</strong>
+                    <div>
+                      <strong>{comment.name}</strong>
+                      <small className="text-muted d-block">
+                        {new Date(comment.created_at).toLocaleString("zh-CN", {
+                          year: "numeric",
+                          month: "2-digit",
+                          day: "2-digit",
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        })}
+                      </small>
+                    </div>
                   </div>
-                  <div className="d-flex align-items-center gap-2">
-                    <small className="text-muted">
-                      {comment.created_at.slice(0, 19).replace("T", " ")}
-                    </small>
-                    {comment.user_id === currentUserId && (
-                      <Button
-                        size="sm"
-                        variant="outline-danger"
-                        onClick={() => handleDelete(comment.id)}
-                      >
-                        删除
-                      </Button>
-                    )}
-                  </div>
+                  {comment.user_id === currentUserId && (
+                    <Button
+                      size="sm"
+                      variant="outline-danger"
+                      className="rounded-pill"
+                      onClick={() => handleDelete(comment.id)}
+                    >
+                      删除
+                    </Button>
+                  )}
                 </div>
-                <p className="mb-1">{comment.content}</p>
+                <p className="mb-2">{comment.content}</p>
 
                 {comment.images && comment.images.length > 0 && (
                   <div className="d-flex flex-wrap gap-2">
                     {comment.images.map((url, idx) => (
-                      <Image
+                      <div
                         key={idx}
-                        src={url}
-                        thumbnail
-                        width={100}
-                        height={100}
+                        className="border rounded-2 overflow-hidden"
+                        style={{ cursor: "pointer" }}
                         onClick={() => handleImageClick(url)}
-                      />
+                      >
+                        <Image
+                          src={url}
+                          thumbnail
+                          width={100}
+                          height={100}
+                          style={{ objectFit: "cover", aspectRatio: "1/1" }}
+                        />
+                      </div>
                     ))}
                   </div>
                 )}

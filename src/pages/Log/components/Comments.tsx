@@ -243,14 +243,12 @@ export default function Comments() {
                     style={{
                       width: "24px",
                       height: "24px",
-                      // filter: "invert(50%)",
                     }}
                   />
                 </Button>
               </Form.Group>
             </div>
 
-            {/* 隐藏的文件输入框 */}
             <Form.Group controlId="imageUpload" className="mb-3">
               <Form.Label className="d-none">上传图片</Form.Label>
               <Form.Control
@@ -337,6 +335,7 @@ export default function Comments() {
                         aspectRatio: "1/1",
                         objectFit: "cover",
                       }}
+                      onClick={() => handleImageClick(comment.avatar_url)}
                       alt="头像"
                     />
                     <div>
@@ -370,7 +369,6 @@ export default function Comments() {
                     {comment.images.map((url, idx) => (
                       <div
                         key={idx}
-                        className="border rounded-2 overflow-hidden"
                         style={{ cursor: "pointer" }}
                         onClick={() => handleImageClick(url)}
                       >

@@ -325,6 +325,11 @@ export default function Page2025_05_03() {
           src="https://s3.bmp.ovh/imgs/2025/05/04/c3e6c8dd020d8544.png"
           alt="tree"
           className="mt-4 rounded-lg mx-auto block"
+          onClick={() =>
+            handleImageClick(
+              "https://s3.bmp.ovh/imgs/2025/05/04/c3e6c8dd020d8544.png"
+            )
+          }
         />
         <img
           src="https://s3.bmp.ovh/imgs/2025/05/04/b84490c056783ae0.gif"

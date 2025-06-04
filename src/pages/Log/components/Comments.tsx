@@ -4,6 +4,7 @@ import { useLocation } from "react-router-dom";
 import { supabase } from "../../Auth/utils/supabaseClient";
 import ImageModal from "../../../utils/ImageModal";
 import { FaReply, FaRegThumbsUp, FaThumbsUp } from "react-icons/fa";
+import { FaEllipsisV } from "react-icons/fa";
 
 interface Comment {
   id: number;
@@ -12,7 +13,7 @@ interface Comment {
   created_at: string;
   avatar_url: string;
   user_id: string;
-  images?: unknown; // 允许任何类型，稍后处理
+  images?: unknown;
   parent_id?: number | null;
   replies: Comment[];
   number_likes: number;
@@ -39,11 +40,24 @@ export default function Comments() {
   } | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [userLikes, setUserLikes] = useState<Record<number, boolean>>({});
-
   const [showModal, setShowModal] = useState(false);
   const [selectedImg, setSelectedImg] = useState("");
+  const [showOptions, setShowOptions] = useState<Record<number, boolean>>({});
 
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  // 检测移动端
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+
+    checkMobile();
+    window.addEventListener("resize", checkMobile);
+    return () => window.removeEventListener("resize", checkMobile);
+  }, []);
 
   const handleImageClick = (imgUrl: string) => {
     setSelectedImg(imgUrl);
@@ -113,12 +127,9 @@ export default function Comments() {
     }
   }, [contentId, currentUserId]);
 
-  // 修复图片格式问题：确保图片始终是数组
+  // 修复图片格式问题
   const normalizeImages = (images: unknown): string[] => {
-    // 如果已经是数组，直接返回
     if (Array.isArray(images)) return images;
-
-    // 如果是字符串，尝试解析为JSON
     if (typeof images === "string") {
       try {
         const parsed = JSON.parse(images);
@@ -127,8 +138,6 @@ export default function Comments() {
         return [];
       }
     }
-
-    // 其他情况返回空数组
     return [];
   };
 
@@ -141,7 +150,6 @@ export default function Comments() {
 
       const data = await res.json();
       if (Array.isArray(data.data)) {
-        // 递归处理评论树，确保图片格式正确
         const processComments = (comments: Comment[]): Comment[] => {
           return comments.map((comment) => {
             const processedComment: Comment = {
@@ -150,7 +158,6 @@ export default function Comments() {
               liked: userLikes[comment.id] || false,
             };
 
-            // 递归处理回复
             if (Array.isArray(comment.replies)) {
               processedComment.replies = processComments(comment.replies);
             } else {
@@ -163,6 +170,7 @@ export default function Comments() {
 
         const processedComments = processComments(data.data);
         setComments(processedComments);
+        setShowOptions({}); // 重置所有选项菜单状态
       }
     } catch (error) {
       console.error("加载评论失败:", error);
@@ -183,11 +191,20 @@ export default function Comments() {
     }
   }, [userLikes, loadComments, currentUserId]);
 
+  const toggleOptions = (commentId: number) => {
+    setShowOptions((prev) => ({
+      ...prev,
+      [commentId]: !prev[commentId],
+    }));
+  };
+
   const handleReplyClick = (commentId: number, userName: string) => {
     setReplyingTo({ id: commentId, name: userName });
     if (textareaRef.current) {
       textareaRef.current.focus();
     }
+    // 关闭所有选项菜单
+    setShowOptions({});
   };
 
   const cancelReply = () => {
@@ -204,7 +221,6 @@ export default function Comments() {
     const updatedUserLikes = { ...userLikes, [commentId]: !wasLiked };
     setUserLikes(updatedUserLikes);
 
-    // 递归更新本地评论中的点赞状态
     const updateCommentLikes = (comments: Comment[]): Comment[] => {
       return comments.map((comment) => {
         if (comment.id === commentId) {
@@ -250,12 +266,9 @@ export default function Comments() {
         throw new Error("点赞操作失败");
       }
 
-      // 重新加载评论以确保数据一致性
       loadComments();
     } catch (error) {
       console.error("点赞操作失败:", error);
-
-      // 恢复之前的点赞状态
       setUserLikes((prev) => ({ ...prev, [commentId]: wasLiked }));
       setComments((prev) => updateCommentLikes(prev));
     }
@@ -337,9 +350,8 @@ export default function Comments() {
 
       const deleteComment = (comments: Comment[]): Comment[] => {
         return comments
-          .filter((comment) => comment.id !== commentId) // 直接过滤掉当前层级要删除的评论
+          .filter((comment) => comment.id !== commentId)
           .map((comment) => {
-            // 递归处理回复中的评论
             if (comment.replies && comment.replies.length > 0) {
               return {
                 ...comment,
@@ -351,6 +363,11 @@ export default function Comments() {
       };
 
       setComments((prev) => deleteComment(prev));
+      setShowOptions((prev) => {
+        const newState = { ...prev };
+        delete newState[commentId];
+        return newState;
+      });
     } catch (error) {
       console.error("删除评论失败:", error);
       alert("删除评论失败，请重试");
@@ -388,35 +405,53 @@ export default function Comments() {
   const renderComment = (comment: Comment, depth: number = 0) => {
     const maxDepth = 2;
     const effectiveDepth = Math.min(depth, maxDepth);
-    const indent = effectiveDepth * 2;
-    // 确保图片是数组
+    const indent = effectiveDepth * (isMobile ? 12 : 16);
     const imageUrls = normalizeImages(comment.images);
 
     return (
       <div
         key={`${comment.id}-${depth}`}
-        className={`py-3 ${depth > 0 ? "border-top" : ""}`}
+        className={`py-3 relative ${depth > 0 ? "border-top" : ""}`}
         style={{
           marginLeft: `${indent}px`,
-          borderLeft:
-            depth > 0 && depth <= maxDepth ? "2px solid #e9ecef" : "none",
-          paddingLeft: depth > 0 ? "16px" : "0",
+          borderLeft: depth > 0 ? "1px solid #e9ecef" : "none",
+          paddingLeft: depth > 0 ? "12px" : "0",
         }}
       >
-        <div className="d-flex justify-content-between align-items-start mb-2">
+        {/* 顶部信息栏 */}
+        <div className="d-flex justify-content-between align-items-center mb-2">
           <div className="d-flex align-items-center gap-2">
             <Image
               src={comment.avatar_url}
-              width={40}
-              height={40}
+              width={isMobile ? 36 : 40}
+              height={isMobile ? 36 : 40}
               roundedCircle
-              style={{ aspectRatio: "1/1", objectFit: "cover" }}
+              style={{
+                aspectRatio: "1/1",
+                objectFit: "cover",
+                border: "1px solid #f0f0f0",
+              }}
               onClick={() => handleImageClick(comment.avatar_url)}
               alt="头像"
             />
             <div>
-              <strong>{comment.name}</strong>
-              <small className="text-muted d-block">
+              <div className="d-flex align-items-center">
+                <strong
+                  style={{
+                    fontSize: isMobile ? "0.95rem" : "1rem",
+                    fontWeight: 600,
+                  }}
+                >
+                  {comment.name}
+                </strong>
+              </div>
+              <small
+                className="text-muted d-block"
+                style={{
+                  fontSize: isMobile ? "0.75rem" : "0.875rem",
+                  marginTop: isMobile ? "2px" : "0",
+                }}
+              >
                 {new Date(comment.created_at).toLocaleString("zh-CN", {
                   year: "numeric",
                   month: "2-digit",
@@ -427,64 +462,109 @@ export default function Comments() {
               </small>
             </div>
           </div>
-          {comment.user_id === currentUserId && (
+
+          {/* 三点菜单按钮 */}
+          <div className="position-relative">
             <Button
-              size="sm"
-              variant="outline-danger"
-              className="rounded-pill"
-              onClick={() => handleDelete(comment.id)}
+              variant="link"
+              className="p-0 text-muted"
+              onClick={() => toggleOptions(comment.id)}
             >
-              删除
+              <FaEllipsisV style={{ fontSize: "1.2rem" }} />
             </Button>
-          )}
+
+            {/* 删除选项菜单 */}
+            {showOptions[comment.id] && (
+              <div
+                className="position-absolute bg-white shadow-sm rounded border"
+                style={{
+                  right: 0,
+                  top: "100%",
+                  zIndex: 100,
+                  width: "100px",
+                }}
+              >
+                <Button
+                  variant="outline-danger"
+                  className="w-100 rounded-0 text-start"
+                  onClick={() => handleDelete(comment.id)}
+                  style={{ fontSize: isMobile ? "0.85rem" : "0.9rem" }}
+                >
+                  删除
+                </Button>
+              </div>
+            )}
+          </div>
         </div>
 
-        <p className="mb-2">{comment.content}</p>
+        {/* 评论内容 */}
+        <p
+          className="mb-2 mt-1"
+          style={{
+            fontSize: isMobile ? "0.92rem" : "0.95rem",
+            lineHeight: 1.4,
+          }}
+        >
+          {comment.content}
+        </p>
 
-        <div className="d-flex align-items-center gap-2 mb-2">
+        {/* 操作按钮 */}
+        <div
+          className="d-flex align-items-center gap-3 mt-2"
+          style={{ fontSize: isMobile ? "0.85rem" : "0.9rem" }}
+        >
           <Button
             variant="link"
-            className="p-0 text-muted"
+            className="p-0 text-muted d-flex align-items-center"
             onClick={() => handleLikeClick(comment.id)}
           >
             {comment.liked ? (
-              <FaThumbsUp className="text-primary" />
+              <FaThumbsUp className="text-primary" style={{ marginRight: 4 }} />
             ) : (
-              <FaRegThumbsUp />
+              <FaRegThumbsUp style={{ marginRight: 4 }} />
             )}
-            <span className="ms-1">{comment.number_likes}</span>
+            {comment.number_likes > 0 && comment.number_likes}
           </Button>
 
           <Button
             variant="link"
-            className="p0 text-muted"
+            className="p-0 text-muted d-flex align-items-center"
             onClick={() => handleReplyClick(comment.id, comment.name)}
           >
-            <FaReply /> <span className="ms-1">回复</span>
+            <FaReply style={{ marginRight: 4 }} />
+            回复
           </Button>
         </div>
 
-        {/* 确保图片是数组并使用imageUrls */}
-        {imageUrls && imageUrls.length > 0 && (
+        {/* 图片预览 */}
+        {Array.isArray(imageUrls) && imageUrls.length > 0 && (
           <div className="d-flex flex-wrap gap-2 mt-2">
             {imageUrls.map((url, idx) => (
               <div
                 key={idx}
-                style={{ cursor: "pointer", maxWidth: "100px" }}
+                className="rounded overflow-hidden"
+                style={{
+                  cursor: "pointer",
+                  width: isMobile ? "70px" : "90px",
+                  height: isMobile ? "70px" : "90px",
+                }}
                 onClick={() => handleImageClick(url)}
               >
                 <Image
                   src={url}
-                  thumbnail
-                  style={{ objectFit: "cover", aspectRatio: "1/1" }}
+                  className="w-100 h-100"
+                  style={{
+                    objectFit: "cover",
+                    aspectRatio: "1/1",
+                  }}
                 />
               </div>
             ))}
           </div>
         )}
 
-        {/* 确保处理回复 */}
-        {comment.replies && comment.replies.length > 0 && (
+        {/* 回复部分 */}
+        {Array.isArray(comment.replies) && comment.replies.length > 0 && (
           <div className="mt-3">
             {comment.replies.map((reply) => renderComment(reply, depth + 1))}
           </div>
@@ -494,237 +574,258 @@ export default function Comments() {
   };
 
   return (
-    <div className="container mx-auto px-4 py-6">
-      <Card className="shadow-lg rounded-xl overflow-hidden">
-        <Card.Header className="bg-gradient-to-r from-blue-50 to-indigo-50 py-4">
-          <div className="flex items-center">
-            <div className="bg-indigo-100 p-3 rounded-full mr-4">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                className="h-6 w-6 text-indigo-600"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"
-                />
-              </svg>
+    <div className={isMobile ? "px-3 py-3" : "container mx-auto px-4 py-6"}>
+      <Card className="shadow rounded-xl overflow-hidden border-0">
+        <Card.Header
+          className="bg-white py-3 px-3"
+          style={{ borderBottom: "1px solid #f0f0f0" }}
+        >
+          <div className="d-flex align-items-center justify-content-between">
+            <div className="d-flex align-items-center">
+              <div className="bg-light p-2 rounded-circle d-flex align-items-center justify-content-center mr-2">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-5 w-5 text-muted"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
+                  />
+                </svg>
+              </div>
+              <div>
+                <Card.Title
+                  className="mb-0"
+                  style={{
+                    fontSize: isMobile ? "1.1rem" : "1.2rem",
+                    fontWeight: 600,
+                  }}
+                >
+                  评论区
+                </Card.Title>
+              </div>
             </div>
-            <div>
-              <Card.Title className="text-xl font-bold text-gray-800">
-                评论区
-              </Card.Title>
-              <p className="text-gray-600 text-sm">
-                共{" "}
-                {comments.reduce(
-                  (total, comment) =>
-                    total + 1 + (comment.replies?.length || 0),
-                  0
-                )}{" "}
-                条评论
-              </p>
-            </div>
+            <span
+              className="text-muted"
+              style={{ fontSize: isMobile ? "0.85rem" : "0.9rem" }}
+            >
+              {comments.reduce(
+                (total, comment) => total + 1 + (comment.replies?.length || 0),
+                0
+              )}{" "}
+              条
+            </span>
           </div>
         </Card.Header>
 
-        <Card.Body className="p-6">
-          <Form onSubmit={handleCommentSubmit} className="mb-8">
-            <div className="flex items-start space-x-4">
-              <Image
-                src={userInfo.avatar_url}
-                width={48}
-                height={48}
-                roundedCircle
-                className="object-cover border-2 border-white shadow flex-shrink-0"
-                alt="头像"
-              />
-
-              <div className="flex-grow">
+        <Card.Body className="p-3">
+          <Form onSubmit={handleCommentSubmit} className="mb-4">
+            <div className="d-flex flex-column">
+              <div className="position-relative">
                 {replyingTo && (
-                  <div className="bg-blue-50 rounded-lg px-4 py-2 mb-3 flex justify-between items-center">
+                  <div
+                    className="bg-blue-50 rounded-lg px-3 py-2 mb-3 d-flex justify-content-between align-items-center"
+                    style={{ border: "1px solid #d0e0ff" }}
+                  >
                     <div className="text-blue-600">
                       回复{" "}
                       <span className="font-medium">@{replyingTo.name}</span>
                     </div>
                     <button
                       type="button"
-                      className="text-red-500 hover:text-red-700"
+                      className="btn-close"
                       onClick={cancelReply}
-                    >
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        className="h-5 w-5"
-                        viewBox="0 0 20 20"
-                        fill="currentColor"
-                      >
-                        <path
-                          fillRule="evenodd"
-                          d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
-                          clipRule="evenodd"
-                        />
-                      </svg>
-                    </button>
+                    />
                   </div>
                 )}
 
-                <div className="relative">
-                  <Form.Control
-                    as="textarea"
-                    ref={textareaRef}
-                    value={newComment}
-                    onChange={handleTextChange}
-                    onKeyDown={handleKeyPress}
-                    placeholder={
-                      replyingTo
-                        ? `回复 @${replyingTo.name}...`
-                        : "分享您的想法...(最多上传50张图片)"
-                    }
-                    className="block w-full rounded-xl border border-gray-200 p-4 shadow-sm focus:ring-2 focus:ring-indigo-300 focus:border-indigo-300 text-base"
-                    style={{
-                      minHeight: "100px",
-                      maxHeight: "300px",
-                      resize: "none",
-                    }}
-                  />
+                <Form.Control
+                  as="textarea"
+                  ref={textareaRef}
+                  value={newComment}
+                  onChange={handleTextChange}
+                  onKeyDown={handleKeyPress}
+                  placeholder={
+                    replyingTo
+                      ? `回复 @${replyingTo.name}...`
+                      : "分享您的想法..."
+                  }
+                  className="rounded-lg border border-gray-300 p-3"
+                  style={{
+                    minHeight: "90px",
+                    maxHeight: "200px",
+                    resize: "none",
+                    fontSize: isMobile ? "0.95rem" : "1rem",
+                  }}
+                />
 
-                  <div className="absolute right-3 bottom-3 flex">
-                    <label
-                      htmlFor="fileInput"
-                      className="bg-gray-100 rounded-full p-2 cursor-pointer hover:bg-gray-200"
-                      title="上传图片"
-                    >
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        className="h-5 w-5 text-gray-600"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
-                        />
-                      </svg>
-                      <input
-                        type="file"
-                        multiple
-                        accept="image/*"
-                        className="hidden"
-                        id="fileInput"
-                        onChange={(e) => {
-                          const input = e.target as HTMLInputElement;
-                          const files = Array.from(input.files || []);
-                          if (files.length + selectedImages.length > 50) {
-                            alert("最多上传 50 张图片");
-                            return;
-                          }
-                          setSelectedImages((prev) => [...prev, ...files]);
-                        }}
-                      />
-                    </label>
-                  </div>
-                </div>
-
-                {selectedImages.length > 0 && (
-                  <div className="mt-4 bg-gray-50 rounded-lg p-4">
-                    <div className="flex items-center mb-2">
-                      <span className="text-sm font-medium text-gray-700">
-                        已选图片 ({selectedImages.length}/50)
-                      </span>
-                      <button
-                        type="button"
-                        className="ml-auto text-sm text-red-500 hover:text-red-700"
-                        onClick={() => setSelectedImages([])}
-                      >
-                        清除全部
-                      </button>
-                    </div>
-                    <div className="flex flex-wrap gap-3">
-                      {selectedImages.map((file, index) => (
-                        <div key={index} className="relative group">
-                          <div className="relative overflow-hidden rounded-lg w-20 h-20">
-                            <Image
-                              src={URL.createObjectURL(file)}
-                              className="object-cover w-full h-full"
-                              alt={`上传预览 ${index + 1}`}
-                            />
-                          </div>
-                          <button
-                            type="button"
-                            className="absolute -top-2 -right-2 bg-red-500 rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
-                            onClick={() =>
-                              setSelectedImages((prev) =>
-                                prev.filter((_, i) => i !== index)
-                              )
-                            }
-                          >
-                            <svg
-                              xmlns="http://www.w3.org/2000/svg"
-                              className="h-4 w-4 text-white"
-                              fill="none"
-                              viewBox="0 0 24 24"
-                              stroke="currentColor"
-                            >
-                              <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth={2}
-                                d="M6 18L18 6M6 6l12 12"
-                              />
-                            </svg>
-                          </button>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                <div className="flex justify-end mt-4">
-                  <button
-                    type="submit"
-                    className={`flex items-center justify-center px-5 py-2 font-medium rounded-full text-white shadow transition ${
-                      !newComment.trim() && selectedImages.length === 0
-                        ? "bg-gray-400 cursor-not-allowed"
-                        : "bg-indigo-600 hover:bg-indigo-700"
-                    }`}
-                    disabled={!newComment.trim() && selectedImages.length === 0}
+                <div className="position-absolute bottom-2 right-2 d-flex">
+                  <label
+                    htmlFor="fileInput"
+                    className="text-muted cursor-pointer"
+                    title="上传图片"
                   >
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
-                      className="mr-2 h-5 w-5"
-                      viewBox="0 0 20 20"
-                      fill="currentColor"
+                      className="h-5 w-5"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
                     >
                       <path
-                        fillRule="evenodd"
-                        d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.707a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
-                        clipRule="evenodd"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
                       />
                     </svg>
-                    {replyingTo ? `回复 @${replyingTo.name}` : "发表评论"}
-                  </button>
+                    <input
+                      type="file"
+                      multiple
+                      accept="image/*"
+                      className="d-none"
+                      id="fileInput"
+                      onChange={(e) => {
+                        const input = e.target as HTMLInputElement;
+                        const files = Array.from(input.files || []);
+                        if (files.length + selectedImages.length > 50) {
+                          alert("最多上传 50 张图片");
+                          return;
+                        }
+                        setSelectedImages((prev) => [...prev, ...files]);
+                      }}
+                    />
+                  </label>
                 </div>
+              </div>
+
+              {selectedImages.length > 0 && (
+                <div className="mt-3 bg-gray-50 rounded-lg p-3">
+                  <div className="d-flex align-items-center mb-2">
+                    <span
+                      className="text-gray-700"
+                      style={{ fontSize: isMobile ? "0.85rem" : "0.9rem" }}
+                    >
+                      已选图片 ({selectedImages.length}/50)
+                    </span>
+                    <button
+                      type="button"
+                      className="ms-auto text-danger"
+                      style={{ fontSize: isMobile ? "0.85rem" : "0.9rem" }}
+                      onClick={() => setSelectedImages([])}
+                    >
+                      清除全部
+                    </button>
+                  </div>
+                  <div className="d-flex flex-wrap gap-2">
+                    {selectedImages.map((file, index) => (
+                      <div
+                        key={index}
+                        className="position-relative"
+                        style={{ width: "60px", height: "60px" }}
+                      >
+                        <div className="w-100 h-100 rounded overflow-hidden">
+                          <Image
+                            src={URL.createObjectURL(file)}
+                            className="w-100 h-100"
+                            alt={`上传预览 ${index + 1}`}
+                            style={{ objectFit: "cover" }}
+                          />
+                        </div>
+                        <button
+                          type="button"
+                          className="position-absolute top-0 end-0 bg-white rounded-circle p-0 d-flex align-items-center justify-content-center"
+                          style={{
+                            width: "16px",
+                            height: "16px",
+                            transform: "translate(25%, -25%)",
+                          }}
+                          onClick={() =>
+                            setSelectedImages((prev) =>
+                              prev.filter((_, i) => i !== index)
+                            )
+                          }
+                        >
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            className="h-4 w-4 text-danger"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M6 18L18 6M6 6l12 12"
+                            />
+                          </svg>
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              <div className="d-flex justify-content-between align-items-center mt-3">
+                <div className="d-flex align-items-center gap-2">
+                  <Image
+                    src={userInfo.avatar_url}
+                    width={36}
+                    height={36}
+                    roundedCircle
+                    className="border border-2 border-white shadow"
+                    style={{
+                      width: "36px",
+                      height: "36px",
+                      objectFit: "cover",
+                    }}
+                    alt="头像"
+                  />
+                  <span
+                    style={{
+                      fontSize: isMobile ? "0.9rem" : "1rem",
+                      fontWeight: 500,
+                    }}
+                  >
+                    {userInfo.name}
+                  </span>
+                </div>
+
+                <button
+                  type="submit"
+                  className={`px-4 py-2 rounded-pill text-white shadow-none border-0 ${
+                    !newComment.trim() && selectedImages.length === 0
+                      ? "bg-gray-400 cursor-not-allowed"
+                      : "bg-primary"
+                  }`}
+                  disabled={!newComment.trim() && selectedImages.length === 0}
+                  style={{ fontSize: isMobile ? "0.9rem" : "1rem" }}
+                >
+                  {replyingTo ? "回复" : "发布"}
+                </button>
               </div>
             </div>
           </Form>
 
-          <div className="mt-8">
+          <div className="mt-4">
             {isLoading ? (
-              <div className="flex justify-center py-12">
-                <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-indigo-600"></div>
+              <div className="d-flex justify-center py-8">
+                <div className="spinner-border text-primary" role="status">
+                  <span className="visually-hidden">加载中...</span>
+                </div>
               </div>
             ) : comments.length === 0 ? (
-              <div className="text-center py-12">
-                <div className="bg-gray-100 p-8 rounded-xl max-w-md mx-auto">
+              <div className="text-center py-8">
+                <div className="bg-light rounded-xl p-5">
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
-                    className="mx-auto h-16 w-16 text-gray-400"
+                    className="mx-auto h-16 w-16 text-gray-400 mb-4"
                     fill="none"
                     viewBox="0 0 24 24"
                     stroke="currentColor"
@@ -736,15 +837,15 @@ export default function Comments() {
                       d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
                     />
                   </svg>
-                  <h3 className="mt-4 text-lg font-medium text-gray-900">
+                  <h3 className="text-lg font-medium text-gray-800">
                     暂无评论
                   </h3>
-                  <p className="mt-2 text-gray-500">
+                  <p className="text-gray-600 mt-2">
                     成为第一个分享想法的人吧～
                   </p>
                   <button
                     type="button"
-                    className="mt-6 bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-2 px-6 rounded-full transition"
+                    className="mt-4 bg-primary text-white font-medium py-2 px-5 rounded-pill border-0"
                     onClick={() => textareaRef.current?.focus()}
                   >
                     发表评论
@@ -752,7 +853,10 @@ export default function Comments() {
                 </div>
               </div>
             ) : (
-              <div className="space-y-6 border rounded-2xl bg-white p-5 shadow-sm">
+              <div
+                className="border rounded-2xl bg-white p-3"
+                style={{ borderColor: "#f0f0f0" }}
+              >
                 {comments.map((comment) => renderComment(comment, 0))}
               </div>
             )}

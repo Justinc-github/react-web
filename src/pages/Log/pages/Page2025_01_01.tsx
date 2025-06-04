@@ -112,7 +112,7 @@ export default function Page2025_01_01() {
               葡萄成熟时-蒋政
             </figcaption>
             <a
-              href="https://www.bilibili.com/video/BV1CDJEzfEQ7"
+              href="https://www.bilibili.com/video/BV19b7BzZEfZ"
               className="inline-block px-4 py-1 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-full shadow transition duration-300 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50"
               style={{ textDecoration: "none" }}
             >

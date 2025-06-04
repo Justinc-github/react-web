@@ -107,9 +107,18 @@ export default function Page2025_01_01() {
               )
             }
           />
-          <figcaption className="text-sm italic text-gray-600">
-            葡萄成熟时-蒋政
-          </figcaption>
+          <div className="flex items-center justify-center space-x-3 mt-2">
+            <figcaption className="text-sm italic text-gray-600 flex-shrink-0">
+              葡萄成熟时-蒋政
+            </figcaption>
+            <a
+              href="https://www.bilibili.com/video/BV19b7BzZEfZ?vd_source=5cca6435051f7e5c48470d7032e5d667"
+              className="inline-block px-4 py-1 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-full shadow transition duration-300 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50"
+              style={{ textDecoration: "none" }}
+            >
+              点我观看
+            </a>
+          </div>
         </figure>
         <figure className="text-center">
           <img

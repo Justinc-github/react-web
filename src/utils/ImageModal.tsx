@@ -1,6 +1,14 @@
 import { Modal } from "react-bootstrap";
 import { FC } from "react";
 import { FaDownload } from "react-icons/fa"; // 引入下载图标
+// 声明 flutter_inappwebview 类型
+declare global {
+  interface Window {
+    flutter_inappwebview?: {
+      callHandler: (handlerName: string, ...args: unknown[]) => void;
+    };
+  }
+}
 
 interface ImageModalProps {
   show: boolean;
@@ -9,13 +17,20 @@ interface ImageModalProps {
 }
 
 const ImageModal: FC<ImageModalProps> = ({ show, onHide, imgUrl }) => {
+  // Removed unused downloadFailed state
+
   // 下载图片功能（处理跨域问题）
   const downloadImage = async () => {
+    
     try {
       const response = await fetch(imgUrl);
       const blob = await response.blob();
       const url = URL.createObjectURL(blob);
-
+      if (window.flutter_inappwebview) {
+        // 调用Flutter方法保存图片
+        window.flutter_inappwebview.callHandler("saveImageToGallery", imgUrl);
+        return;
+      }
       const link = document.createElement("a");
       link.href = url;
 

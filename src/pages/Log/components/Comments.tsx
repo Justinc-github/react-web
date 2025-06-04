@@ -483,8 +483,26 @@ export default function Comments() {
           </div>
         )}
 
+        {Array.isArray(imageUrls) && imageUrls.length > 0 && (
+          <div className="d-flex flex-wrap gap-2 mt-2">
+            {imageUrls.map((url, idx) => (
+              <div
+                key={idx}
+                style={{ cursor: "pointer", maxWidth: "100px" }}
+                onClick={() => handleImageClick(url)}
+              >
+                <Image
+                  src={url}
+                  thumbnail
+                  style={{ objectFit: "cover", aspectRatio: "1/1" }}
+                />
+              </div>
+            ))}
+          </div>
+        )}
+
         {/* 确保处理回复 */}
-        {comment.replies && comment.replies.length > 0 && (
+        {Array.isArray(comment.replies) && comment.replies.length > 0 && (
           <div className="mt-3">
             {comment.replies.map((reply) => renderComment(reply, depth + 1))}
           </div>

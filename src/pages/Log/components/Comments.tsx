@@ -464,6 +464,7 @@ export default function Comments() {
           </div>
 
           {/* 三点菜单按钮 */}
+          {currentUserId === comment.user_id && (
           <div className="position-relative">
             <Button
               variant="link"
@@ -495,6 +496,7 @@ export default function Comments() {
               </div>
             )}
           </div>
+          )}
         </div>
 
         {/* 评论内容 */}

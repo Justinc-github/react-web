@@ -8,6 +8,7 @@ import Page2025_05_03 from "../pages/Log/pages/Page2025_05_03";
 import Music from "../pages/Music";
 import RequireAuth from "../pages/Auth/components/requireAuth";
 import Login from "../pages/Auth";
+import Default from "../pages/Log/pages/default";
 export default [
   {
     path: "/",
@@ -60,4 +61,8 @@ export default [
       },
     ],
   },
+  {
+    path: '/test',
+    element: <Default/>
+  }
 ];

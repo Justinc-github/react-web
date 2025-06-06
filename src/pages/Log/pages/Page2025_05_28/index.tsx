@@ -46,25 +46,11 @@ export default function Page2025_05_28() {
     justifyContent: "center",
   } as const;
 
-  const columnGalleryStyle = {
-    ...galleryStyle,
-    flexDirection: "column",
-    alignItems: "center", // 确保纵向排列时内容居中
-  } as const;
-
-  const centeredGalleryItemStyle = {
-    display: "flex",
-    flexDirection: "column",
-    alignItems: "center", // 确保每个图片项内容居中
-    marginBottom: "20px",
-    width: "100%", // 确保宽度足够
-  } as const;
-
   const photo1Style = {
     width: "150px",
     height: "auto",
     cursor: "pointer",
-    margin: "0 auto", // 添加自动边距居中
+    margin: "0",
     padding: "0",
     boxShadow: "0 10px 8px -8px black",
     transition: "transform 0.3s ease",
@@ -74,14 +60,14 @@ export default function Page2025_05_28() {
     height: "100px",
     width: "100px",
     cursor: "pointer",
-    margin: "0 auto", // 添加自动边距居中
+    margin: "0",
     padding: "0",
     boxShadow: "0 10px 8px -8px black",
     transition: "transform 0.3s ease",
   } as const;
 
   const photo3Style = {
-    margin: "0 auto", // 添加自动边距居中
+    margin: "0",
     padding: "0",
     height: "auto",
     width: "150px",
@@ -151,10 +137,10 @@ export default function Page2025_05_28() {
             <img
               src="https://img.picgo.net/2025/06/06/df84fc5276e1f092adb699d3bc44dd2d2fcb0d01d26fa482.png"
               alt="鹏哥小课堂"
-              style={{ width: "140px", height: "auto", objectFit: "contain", margin: "0 auto" }}
+              style={{ width: "140px", height: "auto", objectFit: "contain" }}
               onClick={() =>
                 handleImageClick(
-                  "https://img.picgo.net/2025/06/06/df84fc5276e极ad3bc44dd2d2fcb0d01d26fa482.png"
+                  "https://img.picgo.net/2025/06/06/df84fc5276e1f092adb699d3bc44dd2d2fcb0d01d26fa482.png"
                 )
               }
             />
@@ -188,12 +174,15 @@ export default function Page2025_05_28() {
                   "https://img.picgo.net/2025/06/06/6a66b40788ad0807df90e7b8e818cfbe3a0e662789ad4fca.jpg"
                 )
               }
-              style={centeredGalleryItemStyle}
             >
               <img
                 src="https://img.picgo.net/2025/06/06/6a66b40788ad0807df90e7b8e818cfbe3a0e662789ad4fca.jpg"
                 alt="幕后"
-                style={photo1Style}
+                style={{
+                  ...photo1Style,
+                  display: "block", // 使图片作为块级元素便于居中
+                  margin: "0 auto", // 水平居中
+                }}
                 onMouseEnter={(e) =>
                   (e.currentTarget.style.transform = "scale(1.1)")
                 }
@@ -201,6 +190,7 @@ export default function Page2025_05_28() {
                   (e.currentTarget.style.transform = "scale(1)")
                 }
               />
+              <br />
               <p style={remarkStyle}>幕后鹏哥之准备充分</p>
             </div>
           </div>
@@ -228,12 +218,15 @@ export default function Page2025_05_28() {
                   "https://img.picgo.net/2025/06/06/3ed9c60a7647f1c625240506f8eee22f3ac4c4cd1520c734.jpg"
                 )
               }
-              style={centeredGalleryItemStyle}
             >
               <img
                 src="https://img.picgo.net/2025/06/06/3ed9c60a7647f1c625240506f8eee22f3ac4c4cd1520c734.jpg"
                 alt="曝光"
-                style={photo1Style}
+                style={{
+                  ...photo1Style,
+                  display: "block", // 使图片作为块级元素便于居中
+                  margin: "0 auto", // 水平居中
+                }}
                 onMouseEnter={(e) =>
                   (e.currentTarget.style.transform = "scale(1.1)")
                 }
@@ -241,6 +234,7 @@ export default function Page2025_05_28() {
                   (e.currentTarget.style.transform = "scale(1)")
                 }
               />
+              <br />
               <p style={remarkStyle}>像素最清晰的一张了</p>
             </div>
           </div>
@@ -270,9 +264,8 @@ export default function Page2025_05_28() {
               后半段几乎鹏哥主导，不说虚的，讲的非常认真，全是真情实感，从初识团队到现在，说了很多看法和心里话。
             </p>
           </div>
-          <div style={columnGalleryStyle}>
+          <div style={{ ...galleryStyle, flexDirection: "column" }}>
             <div
-              style={centeredGalleryItemStyle}
               onClick={() =>
                 handleImageClick(
                   "https://img.picgo.net/2025/06/06/26d5f9c457db730cb.jpg"
@@ -282,7 +275,11 @@ export default function Page2025_05_28() {
               <img
                 src="https://img.picgo.net/2025/06/06/26d5f9c457db730cb.jpg"
                 alt="激情演讲"
-                style={photo1Style}
+                style={{
+                  ...photo1Style,
+                  display: "block", // 使图片作为块级元素便于居中
+                  margin: "0 auto", // 水平居中
+                }}
                 onMouseEnter={(e) =>
                   (e.currentTarget.style.transform = "scale(1.1)")
                 }
@@ -290,21 +287,25 @@ export default function Page2025_05_28() {
                   (e.currentTarget.style.transform = "scale(1)")
                 }
               />
+              <br />
               <p style={remarkStyle}>激情的开始</p>
             </div>
 
             <div
-              style={centeredGalleryItemStyle}
               onClick={() =>
                 handleImageClick(
-                  "极ttps://img.picgo.net/2025/06/06/335b971c809adc454.jpg"
+                  "https://img.picgo.net/2025/06/06/335b971c809adc454.jpg"
                 )
               }
             >
               <img
                 src="https://img.picgo.net/2025/06/06/335b971c809adc454.jpg"
                 alt="语重心长"
-                style={photo1Style}
+                style={{
+                  ...photo1Style,
+                  display: "block", // 使图片作为块级元素便于居中
+                  margin: "0 auto", // 水平居中
+                }}
                 onMouseEnter={(e) =>
                   (e.currentTarget.style.transform = "scale(1.1)")
                 }
@@ -312,30 +313,32 @@ export default function Page2025_05_28() {
                   (e.currentTarget.style.transform = "scale(1)")
                 }
               />
+              <br />
               <p style={remarkStyle}>语重心长</p>
             </div>
 
-            <div
-              style={centeredGalleryItemStyle}
+            <img
+              src="https://img.picgo.net/2025/06/06/4dafa7ebff4d97494.png"
+              alt="演讲张力"
+              style={{
+                ...photo1Style,
+                display: "block", // 使图片作为块级元素便于居中
+                margin: "0 auto", // 水平居中
+              }}
+              onMouseEnter={(e) =>
+                (e.currentTarget.style.transform = "scale(1.1)")
+              }
+              onMouseLeave={(e) =>
+                (e.currentTarget.style.transform = "scale(1)")
+              }
               onClick={() =>
                 handleImageClick(
                   "https://img.picgo.net/2025/06/06/4dafa7ebff4d97494.png"
                 )
               }
-            >
-              <img
-                src="https://img.picgo.net/2025/06/06/4dafa7ebff4d97494.png"
-                alt="演讲张力"
-                style={photo1Style}
-                onMouseEnter={(e) =>
-                  (e.currentTarget.style.transform = "scale(1.1)")
-                }
-                onMouseLeave={(e) =>
-                  (e.currentTarget.style.transform = "scale(1)")
-                }
-              />
-              <p style={remarkStyle}>演讲非常有张力</p>
-            </div>
+            />
+            <br />
+            <p style={remarkStyle}>演讲非常有张力</p>
           </div>
           <br />
           <div style={memeStyle}>
@@ -388,9 +391,8 @@ export default function Page2025_05_28() {
           <div>
             <h2 style={{ marginTop: "20px" }}>三人合力，共同讲解</h2>
           </div>
-          <div style={columnGalleryStyle}>
+          <div style={{ ...galleryStyle, flexDirection: "column" }}>
             <div
-              style={centeredGalleryItemStyle}
               onClick={() =>
                 handleImageClick(
                   "https://img.picgo.net/2025/06/06/1dafa7c3960880db22d72282831076683cdb033bccad7c16.jpg"
@@ -400,8 +402,13 @@ export default function Page2025_05_28() {
               <img
                 src="https://img.picgo.net/2025/06/06/1dafa7c3960880db22d72282831076683cdb033bccad7c16.jpg"
                 alt="来器材了"
-                style={photo1Style}
+                style={{
+                  ...photo1Style,
+                  display: "block", // 使图片作为块级元素便于居中
+                  margin: "0 auto", // 水平居中
+                }}
               />
+              <br />
               <p style={remarkStyle}>
                 讲完不咋讲的ppt后，
                 <br />
@@ -410,7 +417,6 @@ export default function Page2025_05_28() {
             </div>
 
             <div
-              style={centeredGalleryItemStyle}
               onClick={() =>
                 handleImageClick(
                   "https://img.picgo.net/2025/06/06/1fe4b863bb4c08a17.jpg"
@@ -420,28 +426,37 @@ export default function Page2025_05_28() {
               <img
                 src="https://img.picgo.net/2025/06/06/1fe4b863bb4c08a17.jpg"
                 alt="二阶段"
-                style={photo1Style}
+                style={{
+                  ...photo1Style,
+                  display: "block", // 使图片作为块级元素便于居中
+                  margin: "0 auto", // 水平居中
+                }}
               />
+              <br />
               <p style={remarkStyle}>鹏哥抿嘴开二阶段</p>
             </div>
 
             <div
-              style={centeredGalleryItemStyle}
               onClick={() =>
                 handleImageClick(
                   "https://img.picgo.net/2025/06/06/4cc670b4cd56dc8ac4548af04c3d0abb14e0cce4b05438d1.jpg"
-                )}
-         >
+                )
+              }
+            >
               <img
                 src="https://img.picgo.net/2025/06/06/4cc670b4cd56dc8ac4548af04c3d0abb14e0cce4b05438d1.jpg"
                 alt="共同讲解"
-                style={photo1Style}
+                style={{
+                  ...photo1Style,
+                  display: "block", // 使图片作为块级元素便于居中
+                  margin: "0 auto", // 水平居中
+                }}
               />
+              <br />
               <p style={remarkStyle}>讲解"三巨头"</p>
             </div>
 
             <div
-              style={centeredGalleryItemStyle}
               onClick={() =>
                 handleImageClick(
                   "https://img.picgo.net/2025/06/06/8f01339e248b487e7.png"
@@ -451,8 +466,13 @@ export default function Page2025_05_28() {
               <img
                 src="https://img.picgo.net/2025/06/06/8f01339e248b487e7.png"
                 alt="特写"
-                style={photo1Style}
+                style={{
+                  ...photo1Style,
+                  display: "block", // 使图片作为块级元素便于居中
+                  margin: "0 auto", // 水平居中
+                }}
               />
+              <br />
               <div style={remarkStyle}>
                 高尚：
                 <img
@@ -470,7 +490,6 @@ export default function Page2025_05_28() {
             </div>
 
             <div
-              style={centeredGalleryItemStyle}
               onClick={() =>
                 handleImageClick(
                   "https://img.picgo.net/2025/06/06/9e6d953c57fe334bb.png"
@@ -480,8 +499,13 @@ export default function Page2025_05_28() {
               <img
                 src="https://img.picgo.net/2025/06/06/9e6d953c57fe334bb.png"
                 alt="演示"
-                style={photo1Style}
+                style={{
+                  ...photo1Style,
+                  display: "block", // 使图片作为块级元素便于居中
+                  margin: "0 auto", // 水平居中
+                }}
               />
+              <br />
               <p style={remarkStyle}>
                 现场展示机器
                 <br />
@@ -490,7 +514,6 @@ export default function Page2025_05_28() {
             </div>
 
             <div
-              style={centeredGalleryItemStyle}
               onClick={() =>
                 handleImageClick(
                   "https://img.picgo.net/2025/06/06/20a347657f25eb13d50acbe988100ff0de67736f2226360c.jpg"
@@ -500,8 +523,13 @@ export default function Page2025_05_28() {
               <img
                 src="https://img.picgo.net/2025/06/06/20a347657f25eb13d50acbe988100ff0de67736f2226360c.jpg"
                 alt="共同讲解"
-                style={photo1Style}
+                style={{
+                  ...photo1Style,
+                  display: "block", // 使图片作为块级元素便于居中
+                  margin: "0 auto", // 水平居中
+                }}
               />
+              <br />
               <p style={remarkStyle}>"三龙同朝"</p>
             </div>
           </div>
@@ -547,16 +575,30 @@ export default function Page2025_05_28() {
             <img
               src="https://img.picgo.net/2025/06/06/d9907064bfcd08de9810775d15d6b6fbb7f878e30f5b7e1e.jpg"
               alt="不行了"
-              style={photo3Style}
+              style={{
+                ...photo3Style,
+                display: "block", // 使图片作为块级元素便于居中
+                margin: "0 auto", // 水平居中
+              }}
+              onClick={() =>
+                handleImageClick(
+                  "https://img.picgo.net/2025/06/06/d9907064bfcd08de9810775d15d6b6fbb7f878e30f5b7e1e.jpg"
+                )
+              }
             />
             <br />
             <p style={{ fontSize: "1rem", color: "#000", fontWeight: "bold" }}>
               时间最长的一集
             </p>
           </div>
-          <div style={columnGalleryStyle}>
+          <div
+            style={{
+              ...galleryStyle,
+              flexDirection: "column",
+              marginTop: "20px",
+            }}
+          >
             <div
-              style={centeredGalleryItemStyle}
               onClick={() =>
                 handleImageClick(
                   "https://img.picgo.net/2025/06/06/f4b45bee9d30695109eec7f3d26e423acc38d373f2465682.jpg"
@@ -566,13 +608,17 @@ export default function Page2025_05_28() {
               <img
                 src="https://img.picgo.net/2025/06/06/f4b45bee9d30695109eec7f3d26e423acc38d373f2465682.jpg"
                 alt="大合照"
-                style={photo1Style}
+                style={{
+                  ...photo1Style,
+                  display: "block", // 使图片作为块级元素便于居中
+                  margin: "0 auto", // 水平居中
+                }}
               />
+              <br />
               <p style={remarkStyle}>结尾大合照（近）</p>
             </div>
 
             <div
-              style={centeredGalleryItemStyle}
               onClick={() =>
                 handleImageClick(
                   "https://img.picgo.net/2025/06/06/1047d2a1c668c1ea824dddb62c394fd1c43f0d7e53a79243.jpg"
@@ -582,8 +628,13 @@ export default function Page2025_05_28() {
               <img
                 src="https://img.picgo.net/2025/06/06/1047d2a1c668c1ea824dddb62c394fd1c43f0d7e53a79243.jpg"
                 alt="大合照"
-                style={photo1Style}
+                style={{
+                  ...photo1Style,
+                  display: "block", // 使图片作为块级元素便于居中
+                  margin: "0 auto", // 水平居中
+                }}
               />
+              <br />
               <p style={remarkStyle}>结尾大合照（远）</p>
             </div>
           </div>

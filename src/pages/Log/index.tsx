@@ -27,7 +27,7 @@ export default function Log() {
         }
 
         const jsonData = await response.json();
-        console.log(jsonData);
+
         // 将对象转换为数组，并添加 id（使用对象的键）
         const dataArray = Object.keys(jsonData).map((key) => ({
           id: key,

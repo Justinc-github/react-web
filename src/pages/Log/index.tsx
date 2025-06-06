@@ -10,7 +10,7 @@ export default function Log() {
   const [error, setError] = useState(false);
 
   interface CardData {
-    id: string; // API 返回的键是字符串
+    id: string;
     image: string;
     routePath: string;
   }
@@ -28,13 +28,11 @@ export default function Log() {
 
         const jsonData = await response.json();
 
-        // 将对象转换为数组，并添加 id（使用对象的键）
         const dataArray = Object.keys(jsonData).map((key) => ({
           id: key,
           ...jsonData[key],
         }));
 
-        // 将 id 转换为数字并按降序排序
         const sortedData = dataArray
           .map((item) => ({ ...item, id: parseInt(item.id) }))
           .sort((a, b) => b.id - a.id);
@@ -52,7 +50,6 @@ export default function Log() {
     fetchData();
   }, []);
 
-  // 处理卡片点击事件
   const handleCardClick = (card: CardData) => {
     navigate({
       pathname: card.routePath,
@@ -86,7 +83,6 @@ export default function Log() {
     <div className="log">
       <TopNavBar />
       <Container className="my-4">
-        {/* 卡片内容 */}
         <Row className="justify-content-center">
           <Col md={8}>
             <div className="d-grid gap-3">
@@ -94,10 +90,49 @@ export default function Log() {
                 <Card
                   key={card.id}
                   className="shadow-sm p-0 rounded-3"
-                  style={{ cursor: "pointer" }}
+                  style={{
+                    cursor: "pointer",
+                    overflow: "hidden",
+                    // 控制卡片尺寸
+                    aspectRatio: "20/7",
+                  }}
                   onClick={() => handleCardClick(card)}
                 >
-                  <Card.Img variant="top" src={card.image} />
+                  {/* 图片容器 - 保持宽高比 */}
+                  <div
+                    style={{
+                      position: "relative",
+                      width: "100%",
+                      paddingTop: "35%", // 16:9 = 56.25%, 4:3 = 75%
+                      overflow: "hidden",
+                    }}
+                  >
+                    <Card.Img
+                      variant="top"
+                      src={card.image}
+                      style={{
+                        position: "absolute",
+                        top: 0,
+                        left: 0,
+                        width: "100%",
+                        height: "100%",
+                        // 保持比例同时裁剪多余部分
+                        objectFit: "cover",
+                        // 平滑的悬停效果
+                        transition: "transform 0.3s ease",
+                      }}
+                      onMouseEnter={(e) =>
+                        (e.currentTarget.style.transform = "scale(1.03)")
+                      }
+                      onMouseLeave={(e) =>
+                        (e.currentTarget.style.transform = "scale(1)")
+                      }
+                      // 添加加载占位背景
+                      onLoad={(e) =>
+                        (e.currentTarget.style.backgroundColor = "transparent")
+                      }
+                    />
+                  </div>
                 </Card>
               ))}
             </div>

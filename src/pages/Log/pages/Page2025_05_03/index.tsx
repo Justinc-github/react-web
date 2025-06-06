@@ -1,5 +1,5 @@
 import { useState } from "react";
-import ImageModal from "../../../utils/ImageModal";
+import ImageModal from "../../../../utils/ImageModal";
 
 export default function Page2025_05_03() {
   const [showModal, setShowModal] = useState(false);

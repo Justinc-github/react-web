@@ -1,4 +1,13 @@
+import { useState } from "react";
+import ImageModal from "../../../../utils/ImageModal";
+
 export default function Page2024_10_03() {
+  const [showModal, setShowModal] = useState(false);
+  const [selectedImg, setSelectedImg] = useState("");
+  const handleImageClick = (imgUrl: string) => {
+    setSelectedImg(imgUrl);
+    setShowModal(true);
+  };
   return (
     <div className="bg-gray-100 font-sans">
       <div className="container mx-auto p-8" style={{ padding: "10%" }}>
@@ -14,6 +23,11 @@ export default function Page2024_10_03() {
             height="50%"
             alt="1"
             className="mt-4 rounded-lg mx-auto block"
+            onClick={() =>
+              handleImageClick(
+                "https://img.picgo.net/2025/06/05/hz958343429e0d0aa7.gif"
+              )
+            }
           />
 
           <figure className="text-center">
@@ -302,6 +316,11 @@ export default function Page2024_10_03() {
           </p>
         </div>
       </div>
+      <ImageModal
+        show={showModal}
+        onHide={() => setShowModal(false)}
+        imgUrl={selectedImg}
+      />
     </div>
   );
 }

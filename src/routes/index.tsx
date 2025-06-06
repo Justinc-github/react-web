@@ -3,12 +3,14 @@ import Home from "../pages/Home";
 import Log from "../pages/Log";
 
 import FullScreenLayout from "../pages/Log/components/FullscreenLayout";
-import Page2025_01_01 from "../pages/Log/pages/Page2025_01_01";
-import Page2025_05_03 from "../pages/Log/pages/Page2025_05_03";
+
 import Music from "../pages/Music";
 import RequireAuth from "../pages/Auth/components/requireAuth";
 import Login from "../pages/Auth";
 import Page2024_10_03 from "../pages/Log/pages/Page2024_10_03";
+import Page2025_01_01 from "../pages/Log/pages/Page2025_01_01";
+import Page2025_05_03 from "../pages/Log/pages/Page2025_05_03";
+import Page2025_05_28 from "../pages/Log/pages/Page2025_05_28";
 export default [
   {
     path: "/",
@@ -62,6 +64,10 @@ export default [
       {
         path: "page2025_05_03",
         element: <Page2025_05_03 />,
+      },
+      {
+        path: "page2025_05_28",
+        element: <Page2025_05_28 />,
       },
     ],
   },

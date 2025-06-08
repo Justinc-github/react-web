@@ -11,6 +11,10 @@ import Page2024_10_03 from "../pages/Log/pages/Page2024_10_03";
 import Page2025_01_01 from "../pages/Log/pages/Page2025_01_01";
 import Page2025_05_03 from "../pages/Log/pages/Page2025_05_03";
 import Page2025_05_28 from "../pages/Log/pages/Page2025_05_28";
+import Note from "../pages/Note";
+import MarkdownPage from "../pages/Note/components/MarkdownPage";
+
+
 export default [
   {
     path: "/",
@@ -27,7 +31,7 @@ export default [
 
   {
     path: "/login",
-    element: <Login />, // 登录页本身不需要保护
+    element: <Login />,
   },
   {
     path: "/log",
@@ -36,6 +40,24 @@ export default [
         <Log />
       </RequireAuth>
     ),
+  },
+  {
+    path: "/note",
+    element: (
+      <RequireAuth>
+        <Note />
+      </RequireAuth>
+    ),
+    children: [
+      {
+        path: "markdown",
+        element: (
+          <RequireAuth>
+            <MarkdownPage />
+          </RequireAuth>
+        ),
+      },
+    ],
   },
   {
     path: "/music",

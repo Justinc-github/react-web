@@ -13,8 +13,7 @@ export default function TopNavbar() {
   // 模拟用户数据
   const user = {
     name: "张三",
-    avatar:
-      "https://img.picgo.net/2025/05/05/scaled_100000060809edf5c408fc3a87.jpeg",
+    avatar: "https://img.picgo.net/2025/05/05/touxiange48491887ed787ed.jpg",
     email: "zhangsan@example.com",
   };
   const handleSignOut = async () => {

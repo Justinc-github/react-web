@@ -1,6 +1,7 @@
 import { Modal } from "react-bootstrap";
-import { FC } from "react";
-import { FaDownload } from "react-icons/fa"; // 引入下载图标
+import { FC, useState, useEffect, useRef } from "react";
+import { FaDownload, FaSearchPlus, FaSearchMinus } from "react-icons/fa";
+
 // 声明 flutter_inappwebview 类型
 declare global {
   interface Window {
@@ -17,24 +18,48 @@ interface ImageModalProps {
 }
 
 const ImageModal: FC<ImageModalProps> = ({ show, onHide, imgUrl }) => {
-  // Removed unused downloadFailed state
+  const [scale, setScale] = useState(1);
+  const [translateX, setTranslateX] = useState(0);
+  const [translateY, setTranslateY] = useState(0);
+  const [startX, setStartX] = useState(0);
+  const [startY, setStartY] = useState(0);
+  const [isDragging, setIsDragging] = useState(false);
 
-  // 下载图片功能（处理跨域问题）
+  // 图片容器引用
+  const imgRef = useRef<HTMLImageElement | null>(null);
+
+  // 重置图片缩放和平移
+  const resetTransform = () => {
+    setScale(1);
+    setTranslateX(0);
+    setTranslateY(0);
+  };
+
+  // 放大图片
+  const zoomIn = () => {
+    setScale((prev) => Math.min(prev * 1.2, 5));
+  };
+
+  // 缩小图片
+  const zoomOut = () => {
+    setScale((prev) => Math.max(prev / 1.2, 0.5));
+  };
+
+  // 下载图片功能
   const downloadImage = async () => {
-    
     try {
       const response = await fetch(imgUrl);
       const blob = await response.blob();
       const url = URL.createObjectURL(blob);
+
       if (window.flutter_inappwebview) {
-        // 调用Flutter方法保存图片
         window.flutter_inappwebview.callHandler("saveImageToGallery", imgUrl);
         return;
       }
+
       const link = document.createElement("a");
       link.href = url;
 
-      // 从URL中提取文件名
       const filename =
         imgUrl.substring(imgUrl.lastIndexOf("/") + 1) || "download";
       link.download = filename.includes(".") ? filename : `${filename}.jpg`;
@@ -43,15 +68,62 @@ const ImageModal: FC<ImageModalProps> = ({ show, onHide, imgUrl }) => {
       link.click();
       document.body.removeChild(link);
 
-      // 清理临时URL
       setTimeout(() => URL.revokeObjectURL(url), 100);
     } catch (error) {
       console.error("下载失败:", error);
-      // 备用方案：直接打开图片
-      const win = window.open(imgUrl, "_blank");
-      win?.focus();
+      window.open(imgUrl, "_blank")?.focus();
     }
   };
+
+  // 拖拽开始
+  const handleDragStart = (e: React.MouseEvent<HTMLImageElement>) => {
+    if (scale > 1) {
+      setIsDragging(true);
+      setStartX(e.clientX - translateX);
+      setStartY(e.clientY - translateY);
+    }
+  };
+
+  // 拖拽移动
+  const handleDragMove = (e: React.MouseEvent<HTMLImageElement>) => {
+    if (isDragging) {
+      e.preventDefault();
+      setTranslateX(e.clientX - startX);
+      setTranslateY(e.clientY - startY);
+    }
+  };
+
+  // 拖拽结束
+  const handleDragEnd = () => {
+    setIsDragging(false);
+  };
+
+  // 滚轮缩放
+  const handleWheel = (e: React.WheelEvent<HTMLDivElement>) => {
+    e.preventDefault();
+
+    const newScale =
+      e.deltaY < 0 ? Math.min(scale * 1.1, 5) : Math.max(scale / 1.1, 0.5);
+
+    // 计算缩放中心
+    const container = e.currentTarget.getBoundingClientRect();
+    const centerX = e.clientX - container.left;
+    const centerY = e.clientY - container.top;
+
+    // 调整平移以保持鼠标位置不变
+    const deltaScale = newScale / scale;
+    setTranslateX(centerX - deltaScale * (centerX - translateX));
+    setTranslateY(centerY - deltaScale * (centerY - translateY));
+
+    setScale(newScale);
+  };
+
+  // 模态框关闭时重置变换
+  useEffect(() => {
+    if (!show) {
+      resetTransform();
+    }
+  }, [show]);
 
   return (
     <Modal
@@ -63,39 +135,68 @@ const ImageModal: FC<ImageModalProps> = ({ show, onHide, imgUrl }) => {
       dialogClassName="border-0 bg-transparent"
     >
       <Modal.Body className="text-center p-0 position-relative">
-        {/* 下载按钮 - 绝对定位在右上角 */}
-        <button
-          onClick={downloadImage}
-          className="position-absolute bg-white rounded-circle border-0 shadow-sm"
-          style={{
-            top: "15px",
-            right: "15px",
-            width: "40px",
-            height: "40px",
-            zIndex: 10,
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-          }}
-          title="保存图片"
-        >
-          <FaDownload size={16} />
-        </button>
+        {/* 工具栏 */}
+        <div className="position-absolute top-0 left-0 w-full p-4 flex justify-between items-center z-10">
+          <button
+            onClick={resetTransform}
+            className="bg-white/80 hover:bg-white text-black rounded-full p-2 mr-2 transition-all"
+            title="重置视图"
+          >
+            <i className="fa fa-refresh"></i>
+          </button>
+          <div className="flex space-x-2">
+            <button
+              onClick={zoomOut}
+              className="bg-white/80 hover:bg-white text-black rounded-full p-2 transition-all"
+              title="缩小"
+            >
+              <FaSearchMinus />
+            </button>
+            <button
+              onClick={zoomIn}
+              className="bg-white/80 hover:bg-white text-black rounded-full p-2 transition-all"
+              title="放大"
+            >
+              <FaSearchPlus />
+            </button>
+            <button
+              onClick={downloadImage}
+              className="bg-white/80 hover:bg-white text-black rounded-full p-2 transition-all"
+              title="保存图片"
+            >
+              <FaDownload />
+            </button>
+          </div>
+        </div>
 
-        {/* 图片区域 - 保持原有功能 */}
-        <img
-          src={imgUrl}
-          style={{
-            width: "100%",
-            height: "auto",
-            maxHeight: "90vh",
-            objectFit: "contain",
-            cursor: "zoom-out",
-            maxWidth: "100%",
-          }}
-          alt="放大预览"
-          onClick={onHide}
-        />
+        {/* 图片容器 - 处理拖拽和缩放 */}
+        <div
+          className="relative w-full h-[90vh] overflow-hidden"
+          onWheel={handleWheel}
+        >
+          <img
+            ref={imgRef}
+            src={imgUrl}
+            style={{
+              position: "absolute",
+              top: "50%",
+              left: "50%",
+              transform: `translate(${-50 + translateX / scale}%, ${
+                -50 + translateY / scale
+              }%) scale(${scale})`,
+              maxWidth: "none",
+              maxHeight: "none",
+              cursor: scale > 1 ? "move" : "zoom-out",
+              transition: "transform 0.1s ease-out",
+            }}
+            alt="放大预览"
+            onClick={scale > 1 ? resetTransform : onHide}
+            onMouseDown={handleDragStart}
+            onMouseMove={handleDragMove}
+            onMouseUp={handleDragEnd}
+            onMouseLeave={handleDragEnd}
+          />
+        </div>
       </Modal.Body>
     </Modal>
   );

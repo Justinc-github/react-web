@@ -1,68 +1,88 @@
-import { Carousel, Container } from "react-bootstrap";
 import { useState } from "react";
+import { Carousel, Container } from "react-bootstrap";
 import ImageModal from "../../../utils/ImageModal";
+import { FaChevronLeft, FaChevronRight } from "react-icons/fa";
+
+interface CarouselItem {
+  id: number;
+  src: string;
+  alt: string;
+  caption: string;
+}
 
 export default function CarouselComponent() {
   const [showModal, setShowModal] = useState(false);
   const [selectedImg, setSelectedImg] = useState("");
+
+  // 集中管理轮播项数据
+  const carouselItems: CarouselItem[] = [
+    {
+      id: 1,
+      src: "https://img.picgo.net/2025/05/26/_2025-01-01e9c68136ae71afbc.jpg",
+      alt: "元旦活动照片",
+      caption: "元旦",
+    },
+    {
+      id: 2,
+      src: "https://img.picgo.net/2025/05/26/_2025-05-0391f8cef7c2f1da66.jpg",
+      alt: "五一活动照片",
+      caption: "五一",
+    },
+    {
+      id: 3,
+      src: "https://img.picgo.net/2025/06/15/_2025_06_149cdf0f25c5dd8cbe.jpg",
+      alt: "送学长照片",
+      caption: "送学长",
+    },
+  ];
+
   const handleImageClick = (imgUrl: string) => {
     setSelectedImg(imgUrl);
     setShowModal(true);
   };
 
   return (
-    <Container>
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "center",
-          width: "100%", // 确保容器撑满父元素
-        }}
+    <Container className="py-8">
+      <h1 className="text-center font-bold text-3xl mb-6 font-serif">
+        今年的我们
+      </h1>
+
+      <Carousel
+        interval={5000}
+        indicators={true}
+        controls={true}
+        className="rounded-lg overflow-hidden shadow-xl mx-auto max-w-4xl"
+        nextIcon={<FaChevronRight className="text-2xl" />}
+        prevIcon={<FaChevronLeft className="text-2xl" />}
       >
-        <Carousel style={{ width: "70%" }}>
-          <Carousel.Item>
+        {carouselItems.map((item) => (
+          <Carousel.Item key={item.id}>
             <img
               className="d-block w-100"
               style={{
                 height: "500px",
                 objectFit: "cover",
                 cursor: "pointer",
+                transition: "transform 0.5s ease",
               }}
-              src="https://img.picgo.net/2025/05/26/_2025-05-0391f8cef7c2f1da66.jpg"
-              alt="五一"
-              onClick={() =>
-                handleImageClick(
-                  "https://img.picgo.net/2025/05/26/_2025-05-0391f8cef7c2f1da66.jpg"
-                )
-              }
+              src={item.src}
+              alt={item.alt}
+              onClick={() => handleImageClick(item.src)}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.transform = "scale(1.02)";
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.transform = "scale(1)";
+              }}
             />
             <Carousel.Caption>
-              <p>五一</p>
+              <p>{item.caption}</p>
             </Carousel.Caption>
           </Carousel.Item>
-          <Carousel.Item>
-            <img
-              className="d-block w-100"
-              style={{
-                height: "500px",
-                objectFit: "cover",
-                cursor: "pointer",
-              }}
-              src="https://img.picgo.net/2025/05/26/_2025-01-01e9c68136ae71afbc.jpg"
-              alt="元旦"
-              onClick={() =>
-                handleImageClick(
-                  "https://img.picgo.net/2025/05/26/_2025-01-01e9c68136ae71afbc.jpg"
-                )
-              }
-            />
-            <Carousel.Caption>
-              <p>元旦</p>
-            </Carousel.Caption>
-          </Carousel.Item>
-        </Carousel>
-      </div>
-      {/* 图片放大 */}
+        ))}
+      </Carousel>
+
+      {/* 图片放大模态框 */}
       <ImageModal
         show={showModal}
         onHide={() => setShowModal(false)}
@@ -71,3 +91,4 @@ export default function CarouselComponent() {
     </Container>
   );
 }
+

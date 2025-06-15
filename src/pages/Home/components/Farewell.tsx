@@ -18,7 +18,7 @@ const FarewellModule: React.FC = () => {
     {
       id: 1,
       name: "李炤毅",
-      major: "方向二",
+      major: "方向三",
       avatar:
         "https://img.picgo.net/2025/06/14/da4711d7431f916356223a0343efcfac5afb46bb5ae669d1.png",
       quote: "222",

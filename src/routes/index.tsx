@@ -13,6 +13,7 @@ import Page2025_05_03 from "../pages/Log/pages/Page2025_05_03";
 import Page2025_05_28 from "../pages/Log/pages/Page2025_05_28";
 import Note from "../pages/Note";
 import MarkdownPage from "../pages/Note/components/MarkdownPage";
+import Unauthorized from "../components/Unauthorized";
 
 
 export default [
@@ -92,5 +93,9 @@ export default [
         element: <Page2025_05_28 />,
       },
     ],
+  },
+  {
+    path: "*",
+    element: <Unauthorized />,
   },
 ];

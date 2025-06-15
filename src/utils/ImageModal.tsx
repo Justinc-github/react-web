@@ -1,6 +1,11 @@
 import { Modal } from "react-bootstrap";
 import { FC, useState, useEffect, useRef } from "react";
-import { FaDownload, FaSearchPlus, FaSearchMinus } from "react-icons/fa";
+import {
+  FaDownload,
+  FaSearchPlus,
+  FaSearchMinus,
+  FaExpand,
+} from "react-icons/fa";
 
 // 声明 flutter_inappwebview 类型
 declare global {
@@ -24,9 +29,57 @@ const ImageModal: FC<ImageModalProps> = ({ show, onHide, imgUrl }) => {
   const [startX, setStartX] = useState(0);
   const [startY, setStartY] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
+  const [startDistance, setStartDistance] = useState(0);
+  const [initialScale, setInitialScale] = useState(1);
+  const [isPinching, setIsPinching] = useState(false);
+  const [containerWidth, setContainerWidth] = useState(0);
+  const [containerHeight, setContainerHeight] = useState(0);
+  const [isMobile, setIsMobile] = useState(false);
 
-  // 图片容器引用
+  // 图片和容器引用
   const imgRef = useRef<HTMLImageElement | null>(null);
+  const containerRef = useRef<HTMLDivElement | null>(null);
+
+  // 检测设备类型
+  useEffect(() => {
+    setIsMobile(
+      /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
+        navigator.userAgent
+      )
+    );
+  }, []);
+
+  // 计算容器尺寸
+  useEffect(() => {
+    const updateContainerSize = () => {
+      if (containerRef.current) {
+        setContainerWidth(containerRef.current.clientWidth);
+        setContainerHeight(containerRef.current.clientHeight);
+      }
+    };
+
+    updateContainerSize();
+    window.addEventListener("resize", updateContainerSize);
+
+    return () => window.removeEventListener("resize", updateContainerSize);
+  }, []);
+
+  // 图片加载完成后调整初始缩放
+  useEffect(() => {
+    if (imgRef.current && containerWidth && containerHeight) {
+      const img = imgRef.current;
+
+      // 计算图片适应容器的初始缩放比例
+      const widthRatio = containerWidth / img.naturalWidth;
+      const heightRatio = containerHeight / img.naturalHeight;
+      const initialFitScale = Math.min(widthRatio, heightRatio, 1);
+
+      // 如果是移动设备且图片很大，使用适应容器的缩放
+      if (isMobile && initialFitScale < 1) {
+        setScale(initialFitScale);
+      }
+    }
+  }, [imgRef, containerWidth, containerHeight, isMobile]);
 
   // 重置图片缩放和平移
   const resetTransform = () => {
@@ -76,26 +129,77 @@ const ImageModal: FC<ImageModalProps> = ({ show, onHide, imgUrl }) => {
   };
 
   // 拖拽开始
-  const handleDragStart = (e: React.MouseEvent<HTMLImageElement>) => {
-    if (scale > 1) {
+  const handleDragStart = (
+    e: React.MouseEvent<HTMLImageElement> | React.TouchEvent<HTMLImageElement>
+  ) => {
+    if (scale > 1 && !isPinching) {
+      const event = "touches" in e ? e.touches[0] : e;
       setIsDragging(true);
-      setStartX(e.clientX - translateX);
-      setStartY(e.clientY - translateY);
+      setStartX(event.clientX - translateX);
+      setStartY(event.clientY - translateY);
     }
   };
 
   // 拖拽移动
-  const handleDragMove = (e: React.MouseEvent<HTMLImageElement>) => {
-    if (isDragging) {
+  const handleDragMove = (
+    e: React.MouseEvent<HTMLImageElement> | React.TouchEvent<HTMLImageElement>
+  ) => {
+    if (isDragging && !isPinching) {
       e.preventDefault();
-      setTranslateX(e.clientX - startX);
-      setTranslateY(e.clientY - startY);
+      const event = "touches" in e ? e.touches[0] : e;
+      setTranslateX(event.clientX - startX);
+      setTranslateY(event.clientY - startY);
     }
   };
 
   // 拖拽结束
   const handleDragEnd = () => {
     setIsDragging(false);
+  };
+
+  // 触摸开始（处理多点触摸）
+  const handleTouchStart = (e: React.TouchEvent<HTMLImageElement>) => {
+    if (e.touches.length === 2) {
+      e.preventDefault();
+      const touch1 = e.touches[0];
+      const touch2 = e.touches[1];
+
+      // 计算两点之间的距离
+      const dx = touch2.clientX - touch1.clientX;
+      const dy = touch2.clientY - touch1.clientY;
+      const distance = Math.sqrt(dx * dx + dy * dy);
+
+      setStartDistance(distance);
+      setInitialScale(scale);
+      setIsPinching(true);
+      setIsDragging(false);
+    }
+  };
+
+  // 触摸移动（处理缩放）
+  const handleTouchMove = (e: React.TouchEvent<HTMLImageElement>) => {
+    if (isPinching && e.touches.length === 2) {
+      e.preventDefault();
+      const touch1 = e.touches[0];
+      const touch2 = e.touches[1];
+
+      // 计算新的两点之间的距离
+      const dx = touch2.clientX - touch1.clientX;
+      const dy = touch2.clientY - touch1.clientY;
+      const newDistance = Math.sqrt(dx * dx + dy * dy);
+
+      // 计算缩放比例
+      const newScale = Math.min(
+        Math.max(initialScale * (newDistance / startDistance), 0.5),
+        5
+      );
+      setScale(newScale);
+    }
+  };
+
+  // 触摸结束
+  const handleTouchEnd = () => {
+    setIsPinching(false);
   };
 
   // 滚轮缩放
@@ -171,8 +275,12 @@ const ImageModal: FC<ImageModalProps> = ({ show, onHide, imgUrl }) => {
 
         {/* 图片容器 - 处理拖拽和缩放 */}
         <div
+          ref={containerRef}
           className="relative w-full h-[90vh] overflow-hidden"
           onWheel={handleWheel}
+          onTouchStart={handleTouchStart}
+          onTouchMove={handleTouchMove}
+          onTouchEnd={handleTouchEnd}
         >
           <img
             ref={imgRef}
@@ -195,8 +303,23 @@ const ImageModal: FC<ImageModalProps> = ({ show, onHide, imgUrl }) => {
             onMouseMove={handleDragMove}
             onMouseUp={handleDragEnd}
             onMouseLeave={handleDragEnd}
+            onTouchStart={handleDragStart}
+            onTouchMove={handleDragMove}
+            onTouchEnd={handleDragEnd}
           />
         </div>
+
+        {/* 移动端提示 */}
+        {isMobile && (
+          <div className="absolute bottom-4 left-0 w-full text-center text-white/80 text-sm z-10">
+            <div className="bg-black/50 inline-block px-4 py-2 rounded-full">
+              <span className="mr-2">
+                <FaExpand />
+              </span>
+              双指缩放或点击重置视图
+            </div>
+          </div>
+        )}
       </Modal.Body>
     </Modal>
   );

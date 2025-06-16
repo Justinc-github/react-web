@@ -1,12 +1,26 @@
-// Log.tsx
 import { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { supabase } from "./utils/supabaseClient";
+import {
+  Container,
+  Row,
+  Col,
+  Card,
+  Form,
+  Button,
+  Alert,
+  Spinner,
+} from "react-bootstrap";
+import "bootstrap/dist/css/bootstrap.min.css";
 
 export default function Login() {
-  const [email, setEmail] = useState("");
+  const [loginInput, setLoginInput] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [loginMode, setLoginMode] = useState<"email" | "username" | "unknown">(
+    "unknown"
+  );
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -19,25 +33,76 @@ export default function Login() {
   const state = location.state as LocationState;
   const from = state?.from?.pathname || "/home";
 
+  // 邮箱格式验证正则表达式
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+  // 自动检测登录模式
+  const detectLoginMode = (input: string) => {
+    if (emailRegex.test(input.trim())) {
+      return "email";
+    } else if (input.trim().length > 0) {
+      return "username";
+    }
+    return "unknown";
+  };
+
+  // 输入变化时自动检测登录模式
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setLoginInput(value);
+    setLoginMode(detectLoginMode(value));
+    setError(null);
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
+    setError(null);
 
     try {
-      const { error } = await supabase.auth.signInWithPassword({
-        email,
+      let loginEmail = loginInput.trim();
+      let errorMessage = "";
+
+      // 根据检测到的模式进行相应处理
+      if (loginMode === "email") {
+        // 直接使用邮箱登录
+      } else if (loginMode === "username") {
+        // 查询用户名对应的邮箱
+        const { data, error: queryError } = await supabase
+          .from("users")
+          .select("email")
+          .eq("username", loginEmail)
+          .single();
+
+        if (queryError) {
+          errorMessage = "用户名不存在";
+          throw new Error(errorMessage);
+        }
+
+        loginEmail = data.email as string;
+      } else {
+        errorMessage = "请输入有效的邮箱或用户名";
+        throw new Error(errorMessage);
+      }
+
+      // 使用邮箱进行登录
+      const { error: authError } = await supabase.auth.signInWithPassword({
+        email: loginEmail,
         password,
       });
 
-      if (error) throw error;
+      if (authError) {
+        errorMessage = authError.message;
+        throw new Error(errorMessage);
+      }
 
       navigate(from, { replace: true });
     } catch (error) {
       if (typeof error === "object" && error !== null) {
-        const err = error as { error_description?: string; message?: string };
-        alert(err.error_description || err.message || "登录失败");
+        const err = error as { message?: string };
+        setError(err.message || "登录失败，请重试");
       } else {
-        alert("登录失败");
+        setError("登录失败，请重试");
       }
     } finally {
       setLoading(false);
@@ -45,71 +110,109 @@ export default function Login() {
   };
 
   return (
-    <div className="max-w-md mx-auto mt-10 p-6 bg-white rounded shadow-md">
-      <h2 className="text-2xl font-bold mb-6 text-gray-800">用户登录</h2>
-      <form onSubmit={handleSubmit}>
-        <div className="mb-4">
-          <label
-            className="block text-gray-700 text-sm font-bold mb-2"
-            htmlFor="email"
-          >
-            电子邮箱
-          </label>
-          <input
-            id="email"
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            className="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-            placeholder="请输入邮箱"
-            required
-          />
-        </div>
+    <Container
+      fluid
+      className="min-vh-100 d-flex align-items-center justify-content-center bg-light"
+    >
+      <Row className="w-100">
+        <Col md={6} lg={4} xl={3} className="mx-auto">
+          <Card className="shadow-lg rounded-lg border-0">
+            <Card.Header className="bg-white border-bottom-0">
+              <Card.Title
+                as="h3"
+                className="text-center font-weight-bold text-primary"
+              >
+                账户登录
+              </Card.Title>
+              <p className="text-center text-muted">
+                系统会自动识别邮箱或用户名
+              </p>
+            </Card.Header>
+            <Card.Body className="p-5">
+              <Form onSubmit={handleSubmit}>
+                <Form.Group controlId="loginInput" className="mb-4">
+                  <Form.Label>邮箱或用户名</Form.Label>
+                  <Form.Control
+                    type="text"
+                    placeholder="输入邮箱或用户名"
+                    value={loginInput}
+                    onChange={handleInputChange}
+                    required
+                    className="shadow-sm"
+                    isInvalid={!!error}
+                  />
+                  {loginMode === "email" && (
+                    <Form.Text className="text-success">
+                      <i className="bi bi-envelope-fill mr-1"></i>已识别为邮箱
+                    </Form.Text>
+                  )}
+                  {loginMode === "username" && (
+                    <Form.Text className="text-primary">
+                      <i className="bi bi-person-fill mr-1"></i>已识别为用户名
+                    </Form.Text>
+                  )}
+                  <Form.Control.Feedback type="invalid">
+                    {error || "请输入有效的邮箱或用户名"}
+                  </Form.Control.Feedback>
+                </Form.Group>
 
-        <div className="mb-6">
-          <label
-            className="block text-gray-700 text-sm font-bold mb-2"
-            htmlFor="password"
-          >
-            登录密码
-          </label>
-          <input
-            id="password"
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            className="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-            placeholder="请输入密码"
-            required
-          />
-        </div>
+                <Form.Group controlId="password" className="mb-4">
+                  <Form.Label>登录密码</Form.Label>
+                  <Form.Control
+                    type="password"
+                    placeholder="••••••••"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
+                    className="shadow-sm"
+                    isInvalid={!!error && !password}
+                  />
+                  <Form.Control.Feedback type="invalid">
+                    请输入密码
+                  </Form.Control.Feedback>
+                </Form.Group>
 
-        <button
-          type="submit"
-          disabled={loading}
-          className={`w-full bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600 transition-colors ${
-            loading ? "opacity-50 cursor-not-allowed" : ""
-          }`}
-        >
-          {loading ? "登录中..." : "立即登录"}
-        </button>
-      </form>
+                {error && (
+                  <Alert variant="danger" className="mb-4">
+                    <div className="d-flex align-items-center">
+                      <i className="bi bi-exclamation-circle-fill mr-2"></i>
+                      <span>{error}</span>
+                    </div>
+                  </Alert>
+                )}
 
-      {/* <div className="mt-4 text-center">
-        <p className="text-gray-600">
-          还没有账号？{" "}
-          <a
-            href="/register"
-            className="text-blue-500 hover:underline"
-            onClick={(e) => {
-              e.preventDefault();
-              navigate("/register");
-            }}
-          >
-            立即注册
-          </a>
-        </p>
-      </div> */}
-    </div>
+                <Button
+                  variant="primary"
+                  type="submit"
+                  disabled={loading}
+                  className="w-100 py-2 font-weight-bold shadow-sm"
+                  style={{ backgroundColor: "#165DFF", borderColor: "#165DFF" }}
+                >
+                  {loading ? (
+                    <Spinner
+                      as="span"
+                      animation="border"
+                      size="sm"
+                      role="status"
+                      aria-hidden="true"
+                      className="mr-2"
+                    />
+                  ) : null}
+                  {loading ? "登录中..." : "登录账户"}
+                </Button>
+              </Form>
+            </Card.Body>
+            <Card.Footer className="bg-white border-top-0 text-center py-4">
+              <p className="text-muted">
+                还没有账户?{" "}
+                <a href="/register" className="text-primary font-weight-bold">
+                  立即注册
+                </a>
+              </p>
+            </Card.Footer>
+          </Card>
+        </Col>
+      </Row>
+    </Container>
   );
 }

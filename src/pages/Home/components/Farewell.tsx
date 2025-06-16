@@ -40,7 +40,7 @@ const FarewellModule: React.FC = () => {
       avatar:
         "https://img.picgo.net/2025/06/14/5634efee9204efb582c4b9937924dd03903cffa6c1f2e7d4.jpg",
       quote: "愿携母校星光，赴万丈理想征途。",
-      graduationDestination: "",
+      graduationDestination: "研究生.辽宁石油",
     },
   ];
 

@@ -403,7 +403,7 @@ const VideoPlayerDemoPage: React.FC = () => {
       {
         id: 1,
         title: "学长送别视频",
-        src: "http://qny.zhongzhi.site/bye.mp4",
+        src: "https://api.zhongzhi.site/static/videos/bye.mp4",
         poster:
           "https://images.unsplash.com/photo-1505142468610-359e7f316c0d?ixlib=rb-4.0.3",
         duration: "6:03",

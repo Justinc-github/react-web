@@ -21,8 +21,8 @@ const FarewellModule: React.FC = () => {
       major: "方向三",
       avatar:
         "https://img.picgo.net/2025/06/14/da4711d7431f916356223a0343efcfac5afb46bb5ae669d1.png",
-      quote: "222",
-      graduationDestination: "111",
+      quote: "携少年意气踏新程，待他日顶峰再相逢。",
+      graduationDestination: "北京.小米",
     },
     {
       id: 2,
@@ -30,8 +30,8 @@ const FarewellModule: React.FC = () => {
       major: "方向三",
       avatar:
         "https://img.picgo.net/2025/06/15/882d328f39005511e542835dea20d456e2d283383d0a2eb6.jpg",
-      quote: "222",
-      graduationDestination: "111",
+      quote: "海内存知己，天涯若比邻。",
+      graduationDestination: "苏州.汇川",
     },
     {
       id: 3,
@@ -39,8 +39,8 @@ const FarewellModule: React.FC = () => {
       major: "方向二",
       avatar:
         "https://img.picgo.net/2025/06/14/5634efee9204efb582c4b9937924dd03903cffa6c1f2e7d4.jpg",
-      quote: "222",
-      graduationDestination: "111",
+      quote: "愿携母校星光，赴万丈理想征途。",
+      graduationDestination: "",
     },
   ];
 

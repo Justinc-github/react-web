@@ -14,6 +14,7 @@ import Page2025_05_28 from "../pages/Log/pages/Page2025_05_28";
 import Note from "../pages/Note";
 import MarkdownPage from "../pages/Note/components/MarkdownPage";
 import Unauthorized from "../components/Unauthorized";
+import VideoPlayer from "../components/VideoPlayer";
 
 
 export default [
@@ -65,6 +66,14 @@ export default [
     element: (
       <RequireAuth>
         <Music />
+      </RequireAuth>
+    ),
+  },
+  {
+    path: "/video",
+    element: (
+      <RequireAuth>
+        <VideoPlayer />
       </RequireAuth>
     ),
   },

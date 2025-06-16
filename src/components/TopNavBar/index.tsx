@@ -12,7 +12,7 @@ export default function TopNavbar() {
 
   // 模拟用户数据
   const user = {
-    name: "张三",
+    name: "哈哈哈",
     avatar: "https://img.picgo.net/2025/05/05/touxiange48491887ed787ed.jpg",
     email: "zhangsan@example.com",
   };
@@ -26,7 +26,7 @@ export default function TopNavbar() {
     }
   };
   return (
-    <Navbar bg="light" expand="lg">
+    <Navbar bg="grey" expand="lg">
       <Container>
         <Nav
           variant="pills"

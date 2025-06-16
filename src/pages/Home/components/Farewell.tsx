@@ -1,6 +1,7 @@
 import React from "react";
-import { Card, Row, Col, Container, Image } from "react-bootstrap";
+import { Card, Row, Col, Container, Image, Button } from "react-bootstrap";
 import { FaGraduationCap, FaBriefcase } from "react-icons/fa";
+import { Link } from "react-router-dom";
 
 // 定义学长信息接口
 interface Senior {
@@ -39,8 +40,8 @@ const FarewellModule: React.FC = () => {
       major: "方向二",
       avatar:
         "https://img.picgo.net/2025/06/14/5634efee9204efb582c4b9937924dd03903cffa6c1f2e7d4.jpg",
-      quote: "愿携母校星光，赴万丈理想征途。",
-      graduationDestination: "研究生.辽宁石油",
+      quote: "天行健，君子以自强不息，让我们在自强不息中挑战自我。",
+      graduationDestination: "研究生.辽宁石油化工大学",
     },
   ];
 
@@ -49,7 +50,10 @@ const FarewellModule: React.FC = () => {
       <Container>
         <div className="text-center mb-10">
           <h2 className="text-[clamp(1.5rem,3vw,2.5rem)] font-bold text-gray-800 mb-3">
-            <FaGraduationCap className="mr-2" /> 25届毕业生
+            <FaGraduationCap className="mr-2" /> 25届毕业生{" "}
+            <Link to="/video">
+              <Button>一睹风采?</Button>
+            </Link>
           </h2>
           <p className="text-gray-600 max-w-3xl mx-auto">
             毕业不是终点，而是新征程的起点。让我们一起祝福学长学姐们在未来的道路上一帆风顺！

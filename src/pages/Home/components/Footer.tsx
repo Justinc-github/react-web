@@ -25,7 +25,7 @@ const Footer: React.FC = () => {
             <ul className="space-y-2">
               <li className="flex items-center">
                 <i className="fas fa-map-marker-alt mr-2 text-gray-400"></i>
-                <span className="text-gray-400">第五教学楼</span>
+                <span className="text-gray-400">辽宁工业大学-第五教学楼</span>
               </li>
               <li className="flex items-center">
                 <img

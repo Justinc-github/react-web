@@ -7,13 +7,14 @@ import Footer from './components/Footer';
 import TeamProjects from './components/TeamProjects';
 
 export default function TopNavbar() {
+  console.log("关了吧，不给你爬！");
   return (
     <div className="home">
       <TopNavBar />
       <CarouselComponent />
       <Features />
       <TeamProjects />
-      <FarewellModule /> {/* 新增送别学长模块 */}
+      <FarewellModule />
       <Footer />
     </div>
   );

@@ -403,7 +403,7 @@ const VideoPlayerDemoPage: React.FC = () => {
       {
         id: 1,
         title: "学长送别视频",
-        src: "https://18342880807:1pdr2y11000daoq95kbtps2zmhvf2vne@webdav-1814881226.pd1.123pan.cn/webdav/%E8%A7%86%E9%A2%91/21%E7%BA%A7%E5%AD%A6%E9%95%BF%E9%80%81%E5%88%AB%E8%A7%86%E9%A2%91/21%E7%BA%A7%E5%AD%A6%E9%95%BF%E9%80%81%E5%88%AB%E8%A7%86%E9%A2%91.mp4",
+        src: "https://api.zhongzhi.site/static/videos/bye.mp4",
         poster:
           "https://images.unsplash.com/photo-1505142468610-359e7f316c0d?ixlib=rb-4.0.3",
         duration: "6:03",

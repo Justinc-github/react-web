@@ -202,14 +202,14 @@ export default function Login() {
                 </Button>
               </Form>
             </Card.Body>
-            <Card.Footer className="bg-white border-top-0 text-center py-4">
+            {/* <Card.Footer className="bg-white border-top-0 text-center py-4">
               <p className="text-muted">
                 还没有账户?{" "}
                 <a href="/register" className="text-primary font-weight-bold">
                   立即注册
                 </a>
               </p>
-            </Card.Footer>
+            </Card.Footer> */}
           </Card>
         </Col>
       </Row>

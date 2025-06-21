@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { Card, Col, Container, Row } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
 import TopNavBar from "../../components/TopNavBar";
+import Footer from "../Home/components/Footer";
 
 export default function Log() {
   const navigate = useNavigate();
@@ -139,6 +140,7 @@ export default function Log() {
           </Col>
         </Row>
       </Container>
+      <Footer/>
     </div>
   );
 }

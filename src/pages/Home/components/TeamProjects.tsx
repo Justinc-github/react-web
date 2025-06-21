@@ -12,21 +12,21 @@ const projects: Project[] = [
   {
     id: 1,
     name: "PS、PR",
-    members: 5,
+    members: 3,
     subject: "方向一",
     image: "https://picsum.photos/400/300?random=2",
   },
   {
     id: 2,
     name: "C#、Java",
-    members: 4,
+    members: 6,
     subject: "方向二",
     image: "https://picsum.photos/400/300?random=3",
   },
   {
     id: 3,
     name: "PLC",
-    members: 6,
+    members: 12,
     subject: "方向三",
     image: "https://picsum.photos/400/300?random=4",
   }

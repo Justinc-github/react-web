@@ -17,6 +17,12 @@ const Footer: React.FC = () => {
                   style={{ height: "28px" }}
                 ></img>
               </a>
+              <a href="https://www.pgyer.com/zhong_zhi" target="_blank">
+                <img
+                  src="favicon.svg"
+                  style={{ height: "28px"}}
+                ></img>
+              </a>
             </div>
           </div>
 

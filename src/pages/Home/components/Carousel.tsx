@@ -20,19 +20,25 @@ export default function CarouselComponent() {
       id: 1,
       src: "https://img.picgo.net/2025/05/26/_2025-01-01e9c68136ae71afbc.jpg",
       alt: "元旦活动照片",
-      caption: "元旦",
+      caption: "",
     },
     {
       id: 2,
       src: "https://img.picgo.net/2025/05/26/_2025-05-0391f8cef7c2f1da66.jpg",
       alt: "五一活动照片",
-      caption: "五一",
+      caption: "",
     },
     {
       id: 3,
       src: "https://img.picgo.net/2025/06/15/_2025_06_149cdf0f25c5dd8cbe.jpg",
       alt: "送学长照片",
-      caption: "送学长",
+      caption: "",
+    },
+    {
+      id: 4,
+      src: "https://img.picgo.net/2025/06/21/28d9ce4849504ea44590cd20616b96991dbae8d227a52b58.jpg",
+      alt: "过生日",
+      caption: "",
     },
   ];
 

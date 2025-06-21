@@ -36,7 +36,7 @@ export default function CarouselComponent() {
     },
     {
       id: 4,
-      src: "https://img.picgo.net/2025/06/21/28d9ce4849504ea44590cd20616b96991dbae8d227a52b58.jpg",
+      src: "https://img.picgo.net/2025/06/21/a64ab2055767c29224e5f93ed454679f93b27c54533d2780.jpg",
       alt: "过生日",
       caption: "",
     },

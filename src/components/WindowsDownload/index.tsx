@@ -3,7 +3,7 @@ import React from "react";
 const windowsApps = [
   {
     version: "v1.0.0",
-    date: "2024-06-21",
+    date: "2025-06-21",
     url: "https://gitee.com/justinc-gitee/project_resources/releases/download/%E2%80%8B%E2%80%8Bv1.0.0/zhongzhi.exe",
     desc: "首发版本，支持视频的简单播放功能。",
   },

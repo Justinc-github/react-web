@@ -18,9 +18,12 @@ const Footer: React.FC = () => {
                 ></img>
               </a>
               <a href="https://www.pgyer.com/zhong_zhi" target="_blank">
+                <img src="/favicon.svg" style={{ height: "28px" }}></img>
+              </a>
+              <a href="/download" target="_blank">
                 <img
-                  src="favicon.svg"
-                  style={{ height: "28px"}}
+                  src="https://img.picgo.net/2025/06/21/app_icon993fdb19c81464f8.png"
+                  style={{ height: "28px" }}
                 ></img>
               </a>
             </div>

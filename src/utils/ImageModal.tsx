@@ -1,13 +1,16 @@
 import { Modal } from "react-bootstrap";
-import { FC, useState, useEffect, useRef } from "react";
+import { FC, useState, useEffect, useRef, useCallback } from "react";
 import {
   FaDownload,
   FaSearchPlus,
   FaSearchMinus,
-  FaExpand,
+  FaTimes,
+  FaSpinner,
+  FaCompress,
+  FaUndo,
+  FaExpandArrowsAlt,
 } from "react-icons/fa";
 
-// 声明 flutter_inappwebview 类型
 declare global {
   interface Window {
     flutter_inappwebview?: {
@@ -26,79 +29,62 @@ const ImageModal: FC<ImageModalProps> = ({ show, onHide, imgUrl }) => {
   const [scale, setScale] = useState(1);
   const [translateX, setTranslateX] = useState(0);
   const [translateY, setTranslateY] = useState(0);
+  const [isDragging, setIsDragging] = useState(false);
+  const [canDrag, setCanDrag] = useState(false);
   const [startX, setStartX] = useState(0);
   const [startY, setStartY] = useState(0);
-  const [isDragging, setIsDragging] = useState(false);
   const [startDistance, setStartDistance] = useState(0);
   const [initialScale, setInitialScale] = useState(1);
   const [isPinching, setIsPinching] = useState(false);
+  const [imageLoaded, setImageLoaded] = useState(false);
+  const [minScale, setMinScale] = useState(0.5);
+  const [maxScale] = useState(5);
   const [containerWidth, setContainerWidth] = useState(0);
   const [containerHeight, setContainerHeight] = useState(0);
+  const [imgWidth, setImgWidth] = useState(0);
+  const [imgHeight, setImgHeight] = useState(0);
   const [isMobile, setIsMobile] = useState(false);
+  const [longPressTimeout, setLongPressTimeout] =
+    useState<NodeJS.Timeout | null>(null);
 
-  // 图片和容器引用
   const imgRef = useRef<HTMLImageElement | null>(null);
   const containerRef = useRef<HTMLDivElement | null>(null);
 
-  // 检测设备类型
   useEffect(() => {
-    setIsMobile(
+    const mobile =
       /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
         navigator.userAgent
-      )
-    );
+      );
+    setIsMobile(mobile);
   }, []);
 
-  // 计算容器尺寸
   useEffect(() => {
+    if (!show) return;
     const updateContainerSize = () => {
       if (containerRef.current) {
         setContainerWidth(containerRef.current.clientWidth);
         setContainerHeight(containerRef.current.clientHeight);
       }
     };
-
     updateContainerSize();
     window.addEventListener("resize", updateContainerSize);
-
     return () => window.removeEventListener("resize", updateContainerSize);
-  }, []);
+  }, [show]);
 
-  // 图片加载完成后调整初始缩放
-  useEffect(() => {
-    if (imgRef.current && containerWidth && containerHeight) {
-      const img = imgRef.current;
-
-      // 计算图片适应容器的初始缩放比例
-      const widthRatio = containerWidth / img.naturalWidth;
-      const heightRatio = containerHeight / img.naturalHeight;
-      const initialFitScale = Math.min(widthRatio, heightRatio, 1);
-
-      // 如果是移动设备且图片很大，使用适应容器的缩放
-      if (isMobile && initialFitScale < 1) {
-        setScale(initialFitScale);
-      }
-    }
-  }, [imgRef, containerWidth, containerHeight, isMobile]);
-
-  // 重置图片缩放和平移
-  const resetTransform = () => {
+  const resetTransform = useCallback(() => {
     setScale(1);
     setTranslateX(0);
     setTranslateY(0);
-  };
+  }, []);
 
-  // 放大图片
-  const zoomIn = () => {
-    setScale((prev) => Math.min(prev * 1.2, 5));
-  };
+  const zoomIn = useCallback(() => {
+    setScale((prev) => Math.min(prev * 1.2, maxScale));
+  }, [maxScale]);
 
-  // 缩小图片
-  const zoomOut = () => {
-    setScale((prev) => Math.max(prev / 1.2, 0.5));
-  };
+  const zoomOut = useCallback(() => {
+    setScale((prev) => Math.max(prev / 1.2, minScale));
+  }, [minScale]);
 
-  // 下载图片功能
   const downloadImage = async () => {
     try {
       const response = await fetch(imgUrl);
@@ -112,122 +98,160 @@ const ImageModal: FC<ImageModalProps> = ({ show, onHide, imgUrl }) => {
 
       const link = document.createElement("a");
       link.href = url;
-
-      const filename =
-        imgUrl.substring(imgUrl.lastIndexOf("/") + 1) || "download";
+      const filename = imgUrl.split("/").pop() || "download.jpg";
       link.download = filename.includes(".") ? filename : `${filename}.jpg`;
-
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
-
-      setTimeout(() => URL.revokeObjectURL(url), 100);
+      URL.revokeObjectURL(url);
     } catch (error) {
       console.error("下载失败:", error);
       window.open(imgUrl, "_blank")?.focus();
     }
   };
 
-  // 拖拽开始
-  const handleDragStart = (
-    e: React.MouseEvent<HTMLImageElement> | React.TouchEvent<HTMLImageElement>
-  ) => {
-    if (scale > 1 && !isPinching) {
-      const event = "touches" in e ? e.touches[0] : e;
-      setIsDragging(true);
-      setStartX(event.clientX - translateX);
-      setStartY(event.clientY - translateY);
+  // 仅左键，长按300ms后允许拖动
+  const handleDragStart = (e: React.MouseEvent | React.TouchEvent) => {
+    if ("button" in e && e.button !== 0) return; // 仅左键
+
+    const point = "touches" in e ? e.touches[0] : e;
+
+    setStartX(point.clientX - translateX);
+    setStartY(point.clientY - translateY);
+
+    if (!isPinching) {
+      const timeout = setTimeout(() => {
+        setIsDragging(true);
+        setCanDrag(true);
+      }, 50);
+      setLongPressTimeout(timeout);
     }
   };
 
-  // 拖拽移动
-  const handleDragMove = (
-    e: React.MouseEvent<HTMLImageElement> | React.TouchEvent<HTMLImageElement>
-  ) => {
-    if (isDragging && !isPinching) {
-      e.preventDefault();
-      const event = "touches" in e ? e.touches[0] : e;
-      setTranslateX(event.clientX - startX);
-      setTranslateY(event.clientY - startY);
+  const handleDragMove = (e: React.MouseEvent | React.TouchEvent) => {
+    if (isDragging && canDrag && !isPinching) {
+      const point = "touches" in e ? e.touches[0] : e;
+      const newX = point.clientX - startX;
+      const newY = point.clientY - startY;
+
+      const maxX = Math.max((imgWidth * scale - containerWidth) / 2, 0);
+      const maxY = Math.max((imgHeight * scale - containerHeight) / 2, 0);
+
+      setTranslateX(Math.max(-maxX, Math.min(maxX, newX)));
+      setTranslateY(Math.max(-maxY, Math.min(maxY, newY)));
     }
   };
 
-  // 拖拽结束
   const handleDragEnd = () => {
+    if (longPressTimeout) {
+      clearTimeout(longPressTimeout);
+      setLongPressTimeout(null);
+    }
     setIsDragging(false);
+    setCanDrag(false);
   };
 
-  // 触摸开始（处理多点触摸）
   const handleTouchStart = (e: React.TouchEvent<HTMLImageElement>) => {
     if (e.touches.length === 2) {
-      e.preventDefault();
-      const touch1 = e.touches[0];
-      const touch2 = e.touches[1];
+      const touches = Array.from(e.touches);
+      const t1 = touches[0];
+      const t2 = touches[1];
 
-      // 计算两点之间的距离
-      const dx = touch2.clientX - touch1.clientX;
-      const dy = touch2.clientY - touch1.clientY;
-      const distance = Math.sqrt(dx * dx + dy * dy);
-
-      setStartDistance(distance);
+      const dx = t2.clientX - t1.clientX;
+      const dy = t2.clientY - t1.clientY;
+      setStartDistance(Math.sqrt(dx * dx + dy * dy));
       setInitialScale(scale);
       setIsPinching(true);
       setIsDragging(false);
+
+      if (longPressTimeout) {
+        clearTimeout(longPressTimeout);
+        setLongPressTimeout(null);
+      }
     }
   };
 
-  // 触摸移动（处理缩放）
   const handleTouchMove = (e: React.TouchEvent<HTMLImageElement>) => {
     if (isPinching && e.touches.length === 2) {
-      e.preventDefault();
-      const touch1 = e.touches[0];
-      const touch2 = e.touches[1];
+      const touches = Array.from(e.touches);
+      const t1 = touches[0];
+      const t2 = touches[1];
 
-      // 计算新的两点之间的距离
-      const dx = touch2.clientX - touch1.clientX;
-      const dy = touch2.clientY - touch1.clientY;
-      const newDistance = Math.sqrt(dx * dx + dy * dy);
-
-      // 计算缩放比例
+      const dx = t2.clientX - t1.clientX;
+      const dy = t2.clientY - t1.clientY;
+      const newDist = Math.sqrt(dx * dx + dy * dy);
       const newScale = Math.min(
-        Math.max(initialScale * (newDistance / startDistance), 0.5),
-        5
+        Math.max(initialScale * (newDist / startDistance), minScale),
+        maxScale
       );
+
+      const container = containerRef.current?.getBoundingClientRect();
+      if (!container) return;
+
+      const centerX = (t1.clientX + t2.clientX) / 2 - container.left;
+      const centerY = (t1.clientY + t2.clientY) / 2 - container.top;
+
+      const deltaScale = newScale / scale;
+      setTranslateX((prev) => prev + (centerX - prev) * (1 - deltaScale));
+      setTranslateY((prev) => prev + (centerY - prev) * (1 - deltaScale));
       setScale(newScale);
     }
   };
 
-  // 触摸结束
   const handleTouchEnd = () => {
     setIsPinching(false);
+    if (longPressTimeout) {
+      clearTimeout(longPressTimeout);
+      setLongPressTimeout(null);
+    }
   };
 
-  // 滚轮缩放
   const handleWheel = (e: React.WheelEvent<HTMLDivElement>) => {
     e.preventDefault();
-
-    const newScale =
-      e.deltaY < 0 ? Math.min(scale * 1.1, 5) : Math.max(scale / 1.1, 0.5);
-
-    // 计算缩放中心
-    const container = e.currentTarget.getBoundingClientRect();
-    const centerX = e.clientX - container.left;
-    const centerY = e.clientY - container.top;
-
-    // 调整平移以保持鼠标位置不变
+    const delta = e.deltaY < 0 ? 1.1 : 0.9;
+    const newScale = Math.min(Math.max(scale * delta, minScale), maxScale);
+    const rect = e.currentTarget.getBoundingClientRect();
+    const offsetX = e.clientX - rect.left;
+    const offsetY = e.clientY - rect.top;
     const deltaScale = newScale / scale;
-    setTranslateX(centerX - deltaScale * (centerX - translateX));
-    setTranslateY(centerY - deltaScale * (centerY - translateY));
 
+    setTranslateX((prev) => prev + (offsetX - prev) * (1 - deltaScale));
+    setTranslateY((prev) => prev + (offsetY - prev) * (1 - deltaScale));
     setScale(newScale);
   };
 
-  // 模态框关闭时重置变换
+  const handleImageLoad = () => {
+    const img = imgRef.current;
+    const container = containerRef.current;
+    if (!img || !container) return;
+
+    const imgW = img.naturalWidth;
+    const imgH = img.naturalHeight;
+    const conW = container.clientWidth;
+    const conH = container.clientHeight;
+
+    setImgWidth(imgW);
+    setImgHeight(imgH);
+
+    const fitScale = Math.min(conW / imgW, conH / imgH, 1);
+    setScale(fitScale);
+    setMinScale(Math.min(fitScale * 0.8, 0.5));
+    setTranslateX(0);
+    setTranslateY(0);
+    setImageLoaded(true);
+  };
+
   useEffect(() => {
     if (!show) {
       resetTransform();
+      setImageLoaded(false);
+      if (longPressTimeout) {
+        clearTimeout(longPressTimeout);
+        setLongPressTimeout(null);
+      }
     }
-  }, [show]);
+  }, [show, resetTransform, longPressTimeout]);
+
 
   return (
     <Modal
@@ -237,89 +261,116 @@ const ImageModal: FC<ImageModalProps> = ({ show, onHide, imgUrl }) => {
       size="xl"
       contentClassName="border-0 bg-transparent"
       dialogClassName="border-0 bg-transparent"
+      backdropClassName="bg-black/80 backdrop-blur-sm"
     >
       <Modal.Body className="text-center p-0 position-relative">
-        {/* 工具栏 */}
-        <div className="position-absolute top-0 left-0 w-full p-4 flex justify-between items-center z-10">
-          <button
-            onClick={resetTransform}
-            className="bg-white/80 hover:bg-white text-black rounded-full p-2 mr-2 transition-all"
-            title="重置视图"
-          >
-            <i className="fa fa-refresh"></i>
-          </button>
+        <div className="position-absolute top-0 left-0 w-full p-3 flex justify-between items-center z-10">
+          <div className="flex items-center space-x-2">
+            <button
+              onClick={onHide}
+              title="关闭 (ESC)"
+              className="bg-white p-2 rounded-full"
+            >
+              <FaTimes />
+            </button>
+            <button
+              onClick={resetTransform}
+              title="重置视图 (0)"
+              className="bg-white p-2 rounded-full"
+            >
+              <FaUndo />
+            </button>
+            <div className="bg-white text-gray-800 rounded-full px-3 py-1 text-sm font-medium">
+              {Math.round(scale * 100)}%
+            </div>
+          </div>
           <div className="flex space-x-2">
             <button
               onClick={zoomOut}
-              className="bg-white/80 hover:bg-white text-black rounded-full p-2 transition-all"
-              title="缩小"
+              title="缩小 (-)"
+              className="bg-white p-2 rounded-full"
             >
               <FaSearchMinus />
             </button>
             <button
               onClick={zoomIn}
-              className="bg-white/80 hover:bg-white text-black rounded-full p-2 transition-all"
-              title="放大"
+              title="放大 (+)"
+              className="bg-white p-2 rounded-full"
             >
               <FaSearchPlus />
             </button>
             <button
               onClick={downloadImage}
-              className="bg-white/80 hover:bg-white text-black rounded-full p-2 transition-all"
               title="保存图片"
+              className="bg-white p-2 rounded-full"
             >
               <FaDownload />
             </button>
           </div>
         </div>
 
-        {/* 图片容器 - 处理拖拽和缩放 */}
         <div
           ref={containerRef}
-          className="relative w-full h-[90vh] overflow-hidden"
+          className="relative w-full h-[90vh] overflow-hidden bg-gray-900"
           onWheel={handleWheel}
           onTouchStart={handleTouchStart}
           onTouchMove={handleTouchMove}
           onTouchEnd={handleTouchEnd}
         >
+          {!imageLoaded && (
+            <div className="absolute inset-0 flex items-center justify-center">
+              <FaSpinner className="text-white text-4xl animate-spin" />
+            </div>
+          )}
           <img
             ref={imgRef}
             src={imgUrl}
-            style={{
-              position: "absolute",
-              top: "50%",
-              left: "50%",
-              transform: `translate(${-50 + translateX / scale}%, ${
-                -50 + translateY / scale
-              }%) scale(${scale})`,
-              maxWidth: "none",
-              maxHeight: "none",
-              cursor: scale > 1 ? "move" : "zoom-out",
-              transition: "transform 0.1s ease-out",
-            }}
-            alt="放大预览"
-            onClick={scale > 1 ? resetTransform : onHide}
+            alt="图片"
+            onLoad={handleImageLoad}
             onMouseDown={handleDragStart}
             onMouseMove={handleDragMove}
             onMouseUp={handleDragEnd}
             onMouseLeave={handleDragEnd}
-            onTouchStart={handleDragStart}
-            onTouchMove={handleDragMove}
-            onTouchEnd={handleDragEnd}
+            onTouchStart={handleTouchStart}
+            onTouchMove={handleTouchMove}
+            onTouchEnd={handleTouchEnd}
+            style={{
+              position: "absolute",
+              left: "50%",
+              top: "50%",
+              transform: `translate(calc(-50% + ${translateX}px), calc(-50% + ${translateY}px)) scale(${scale})`,
+              maxWidth: "none",
+              maxHeight: "none",
+              opacity: imageLoaded ? 1 : 0,
+              cursor:
+                scale > 1 && canDrag
+                  ? "grabbing"
+                  : scale > 1
+                  ? "grab"
+                  : "default",
+              transition:
+                isDragging || isPinching ? "none" : "transform 0.2s ease",
+              userSelect: "none",
+            }}
+            draggable={false}
           />
         </div>
 
-        {/* 移动端提示 */}
-        {isMobile && (
-          <div className="absolute bottom-4 left-0 w-full text-center text-white/80 text-sm z-10">
-            <div className="bg-black/50 inline-block px-4 py-2 rounded-full">
-              <span className="mr-2">
-                <FaExpand />
-              </span>
-              双指缩放或点击重置视图
-            </div>
+        <div className="absolute bottom-4 left-0 w-full text-center z-10">
+          <div className="bg-black/50 text-white/80 inline-block px-4 py-2 rounded-full text-sm">
+            {isMobile ? (
+              <>
+                <FaExpandArrowsAlt className="inline-block mr-2" />
+                双指缩放，单指拖动
+              </>
+            ) : (
+              <>
+                <FaCompress className="inline-block mr-2" />
+                鼠标滚轮缩放，长按左键拖动，ESC关闭
+              </>
+            )}
           </div>
-        )}
+        </div>
       </Modal.Body>
     </Modal>
   );

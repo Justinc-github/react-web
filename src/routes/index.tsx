@@ -15,7 +15,7 @@ import Note from "../pages/Note";
 import MarkdownPage from "../pages/Note/components/MarkdownPage";
 import Unauthorized from "../components/Unauthorized";
 import VideoPlayer from "../components/VideoPlayer";
-import Download from "../components/WindowsDownload";
+import Download from "../pages/WindowsDownload";
 
 
 export default [

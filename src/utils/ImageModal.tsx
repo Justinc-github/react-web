@@ -11,14 +11,6 @@ import {
   FaExpandArrowsAlt,
 } from "react-icons/fa";
 
-declare global {
-  interface Window {
-    flutter_inappwebview?: {
-      callHandler: (handlerName: string, ...args: unknown[]) => void;
-    };
-  }
-}
-
 interface ImageModalProps {
   show: boolean;
   onHide: () => void;
@@ -30,7 +22,6 @@ const ImageModal: FC<ImageModalProps> = ({ show, onHide, imgUrl }) => {
   const [translateX, setTranslateX] = useState(0);
   const [translateY, setTranslateY] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
-  const [canDrag, setCanDrag] = useState(false);
   const [startX, setStartX] = useState(0);
   const [startY, setStartY] = useState(0);
   const [startDistance, setStartDistance] = useState(0);
@@ -44,8 +35,6 @@ const ImageModal: FC<ImageModalProps> = ({ show, onHide, imgUrl }) => {
   const [imgWidth, setImgWidth] = useState(0);
   const [imgHeight, setImgHeight] = useState(0);
   const [isMobile, setIsMobile] = useState(false);
-  const [longPressTimeout, setLongPressTimeout] =
-    useState<NodeJS.Timeout | null>(null);
 
   const imgRef = useRef<HTMLImageElement | null>(null);
   const containerRef = useRef<HTMLDivElement | null>(null);
@@ -90,12 +79,6 @@ const ImageModal: FC<ImageModalProps> = ({ show, onHide, imgUrl }) => {
       const response = await fetch(imgUrl);
       const blob = await response.blob();
       const url = URL.createObjectURL(blob);
-
-      if (window.flutter_inappwebview) {
-        window.flutter_inappwebview.callHandler("saveImageToGallery", imgUrl);
-        return;
-      }
-
       const link = document.createElement("a");
       link.href = url;
       const filename = imgUrl.split("/").pop() || "download.jpg";
@@ -110,27 +93,27 @@ const ImageModal: FC<ImageModalProps> = ({ show, onHide, imgUrl }) => {
     }
   };
 
-  // 仅左键，长按300ms后允许拖动
   const handleDragStart = (e: React.MouseEvent | React.TouchEvent) => {
-    if ("button" in e && e.button !== 0) return; // 仅左键
-
-    const point = "touches" in e ? e.touches[0] : e;
-
-    setStartX(point.clientX - translateX);
-    setStartY(point.clientY - translateY);
-
-    if (!isPinching) {
-      const timeout = setTimeout(() => {
-        setIsDragging(true);
-        setCanDrag(true);
-      }, 50);
-      setLongPressTimeout(timeout);
+    if (
+      !isPinching &&
+      e.nativeEvent instanceof MouseEvent &&
+      e.nativeEvent.button === 0
+    ) {
+      const point = e.nativeEvent;
+      setStartX(point.clientX - translateX);
+      setStartY(point.clientY - translateY);
+      setIsDragging(true);
     }
   };
 
   const handleDragMove = (e: React.MouseEvent | React.TouchEvent) => {
-    if (isDragging && canDrag && !isPinching) {
-      const point = "touches" in e ? e.touches[0] : e;
+    if (isDragging && !isPinching) {
+      let point: { clientX: number; clientY: number };
+      if ("touches" in e.nativeEvent && e.nativeEvent.touches.length > 0) {
+        point = e.nativeEvent.touches[0];
+      } else {
+        point = e.nativeEvent as MouseEvent;
+      }
       const newX = point.clientX - startX;
       const newY = point.clientY - startY;
 
@@ -142,41 +125,28 @@ const ImageModal: FC<ImageModalProps> = ({ show, onHide, imgUrl }) => {
     }
   };
 
-  const handleDragEnd = () => {
-    if (longPressTimeout) {
-      clearTimeout(longPressTimeout);
-      setLongPressTimeout(null);
-    }
-    setIsDragging(false);
-    setCanDrag(false);
-  };
+  const handleDragEnd = () => setIsDragging(false);
 
   const handleTouchStart = (e: React.TouchEvent<HTMLImageElement>) => {
     if (e.touches.length === 2) {
-      const touches = Array.from(e.touches);
-      const t1 = touches[0];
-      const t2 = touches[1];
-
+      const [t1, t2] = [e.touches[0], e.touches[1]];
       const dx = t2.clientX - t1.clientX;
       const dy = t2.clientY - t1.clientY;
       setStartDistance(Math.sqrt(dx * dx + dy * dy));
       setInitialScale(scale);
       setIsPinching(true);
       setIsDragging(false);
-
-      if (longPressTimeout) {
-        clearTimeout(longPressTimeout);
-        setLongPressTimeout(null);
-      }
+    } else if (e.touches.length === 1) {
+      const touch = e.touches[0];
+      setStartX(touch.clientX - translateX);
+      setStartY(touch.clientY - translateY);
+      setIsDragging(true);
     }
   };
 
   const handleTouchMove = (e: React.TouchEvent<HTMLImageElement>) => {
     if (isPinching && e.touches.length === 2) {
-      const touches = Array.from(e.touches);
-      const t1 = touches[0];
-      const t2 = touches[1];
-
+      const [t1, t2] = [e.touches[0], e.touches[1]];
       const dx = t2.clientX - t1.clientX;
       const dy = t2.clientY - t1.clientY;
       const newDist = Math.sqrt(dx * dx + dy * dy);
@@ -195,30 +165,49 @@ const ImageModal: FC<ImageModalProps> = ({ show, onHide, imgUrl }) => {
       setTranslateX((prev) => prev + (centerX - prev) * (1 - deltaScale));
       setTranslateY((prev) => prev + (centerY - prev) * (1 - deltaScale));
       setScale(newScale);
+    } else if (e.touches.length === 1 && isDragging) {
+      const touch = e.touches[0];
+      const newX = touch.clientX - startX;
+      const newY = touch.clientY - startY;
+
+      const maxX = Math.max((imgWidth * scale - containerWidth) / 2, 0);
+      const maxY = Math.max((imgHeight * scale - containerHeight) / 2, 0);
+
+      setTranslateX(Math.max(-maxX, Math.min(maxX, newX)));
+      setTranslateY(Math.max(-maxY, Math.min(maxY, newY)));
     }
   };
 
   const handleTouchEnd = () => {
     setIsPinching(false);
-    if (longPressTimeout) {
-      clearTimeout(longPressTimeout);
-      setLongPressTimeout(null);
-    }
+    setIsDragging(false);
   };
 
-  const handleWheel = (e: React.WheelEvent<HTMLDivElement>) => {
-    e.preventDefault();
-    const delta = e.deltaY < 0 ? 1.1 : 0.9;
-    const newScale = Math.min(Math.max(scale * delta, minScale), maxScale);
-    const rect = e.currentTarget.getBoundingClientRect();
-    const offsetX = e.clientX - rect.left;
-    const offsetY = e.clientY - rect.top;
-    const deltaScale = newScale / scale;
+  const handleWheel = useCallback(
+    (e: WheelEvent) => {
+      e.preventDefault();
+      const delta = e.deltaY < 0 ? 1.1 : 0.9;
+      const newScale = Math.min(Math.max(scale * delta, minScale), maxScale);
+      const container = containerRef.current;
+      if (!container) return;
+      const rect = container.getBoundingClientRect();
+      const offsetX = e.clientX - rect.left;
+      const offsetY = e.clientY - rect.top;
+      const deltaScale = newScale / scale;
 
-    setTranslateX((prev) => prev + (offsetX - prev) * (1 - deltaScale));
-    setTranslateY((prev) => prev + (offsetY - prev) * (1 - deltaScale));
-    setScale(newScale);
-  };
+      setTranslateX((prev) => prev + (offsetX - prev) * (1 - deltaScale));
+      setTranslateY((prev) => prev + (offsetY - prev) * (1 - deltaScale));
+      setScale(newScale);
+    },
+    [scale, minScale, maxScale]
+  );
+
+  useEffect(() => {
+    const container = containerRef.current;
+    if (!container) return;
+    container.addEventListener("wheel", handleWheel, { passive: false });
+    return () => container.removeEventListener("wheel", handleWheel);
+  }, [handleWheel]);
 
   const handleImageLoad = () => {
     const img = imgRef.current;
@@ -245,13 +234,8 @@ const ImageModal: FC<ImageModalProps> = ({ show, onHide, imgUrl }) => {
     if (!show) {
       resetTransform();
       setImageLoaded(false);
-      if (longPressTimeout) {
-        clearTimeout(longPressTimeout);
-        setLongPressTimeout(null);
-      }
     }
-  }, [show, resetTransform, longPressTimeout]);
-
+  }, [show, resetTransform]);
 
   return (
     <Modal
@@ -311,8 +295,7 @@ const ImageModal: FC<ImageModalProps> = ({ show, onHide, imgUrl }) => {
 
         <div
           ref={containerRef}
-          className="relative w-full h-[90vh] overflow-hidden bg-gray-900"
-          onWheel={handleWheel}
+          className="relative w-full h-[90vh] overflow-hidden bg-gray-900 touch-none"
           onTouchStart={handleTouchStart}
           onTouchMove={handleTouchMove}
           onTouchEnd={handleTouchEnd}
@@ -343,7 +326,7 @@ const ImageModal: FC<ImageModalProps> = ({ show, onHide, imgUrl }) => {
               maxHeight: "none",
               opacity: imageLoaded ? 1 : 0,
               cursor:
-                scale > 1 && canDrag
+                scale > 1 && isDragging
                   ? "grabbing"
                   : scale > 1
                   ? "grab"
@@ -360,13 +343,13 @@ const ImageModal: FC<ImageModalProps> = ({ show, onHide, imgUrl }) => {
           <div className="bg-black/50 text-white/80 inline-block px-4 py-2 rounded-full text-sm">
             {isMobile ? (
               <>
-                <FaExpandArrowsAlt className="inline-block mr-2" />
+                <FaExpandArrowsAlt className="inline-block mr-2" />{" "}
                 双指缩放，单指拖动
               </>
             ) : (
               <>
-                <FaCompress className="inline-block mr-2" />
-                鼠标滚轮缩放，长按左键拖动，ESC关闭
+                <FaCompress className="inline-block mr-2" />{" "}
+                鼠标滚轮缩放，拖动移动，ESC关闭
               </>
             )}
           </div>

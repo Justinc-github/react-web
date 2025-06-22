@@ -40,6 +40,12 @@ export default function CarouselComponent() {
       alt: "过生日",
       caption: "",
     },
+    {
+      id: 5,
+      src: "https://img.picgo.net/2025/06/22/ad46f7cacc639e7f6314f11823d8f3adf9bf0318de5910cd.jpg",
+      alt: "送学长",
+      caption: "",
+    },
   ];
 
   const handleImageClick = (imgUrl: string) => {

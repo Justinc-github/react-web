@@ -48,6 +48,11 @@ const Footer: React.FC = () => {
         </div>
         <div className="border-t border-gray-800 mt-12 pt-8 text-center text-gray-500">
           <p>&copy; 2025 众智创新团队. 保留所有权利.</p>
+          <a href="https://beian.miit.gov.cn" id="beian" 
+             style={{ textDecoration: "none", outline: "none", color: "inherit" }}
+          target="_blank">
+            辽ICP备2025055354号-1
+          </a>
         </div>
       </div>
     </footer>

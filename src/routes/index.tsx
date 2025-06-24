@@ -17,7 +17,6 @@ import Unauthorized from "../components/Unauthorized";
 import VideoPlayer from "../components/VideoPlayer";
 import Download from "../pages/WindowsDownload";
 
-
 export default [
   {
     path: "/",
@@ -25,11 +24,7 @@ export default [
   },
   {
     path: "/home",
-    element: (
-      <RequireAuth>
-        <Home />
-      </RequireAuth>
-    ),
+    element: <Home />,
   },
 
   {

@@ -37,7 +37,7 @@ export default function TopNavbar() {
           <Nav.Item className="nav-item-flex">
             <Nav.Link
               as={Link}
-              to="/home"
+              to="/"
               eventKey="/home"
               className="nav-hover"
             >

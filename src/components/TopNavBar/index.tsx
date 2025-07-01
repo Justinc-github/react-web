@@ -1,110 +1,128 @@
 import { Container, Nav, Navbar, NavDropdown, Image } from "react-bootstrap";
-import "./TopNavBar.css";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { signOut } from "../../pages/Auth/utils/logout";
-// import { useUser } from "../../pages/Auth/utils/userCurrent";
+
+interface User {
+  avatar_url?: string;
+  name?: string;
+  email?: string;
+}
 
 export default function TopNavbar() {
   const location = useLocation();
-  const [showDropdown, setShowDropdown] = useState(false);
   const navigate = useNavigate();
+  const [isMobile, setIsMobile] = useState(false);
+  const [showDropdown, setShowDropdown] = useState(false);
+  const [user, setUser] = useState<User | null>(null);
 
-  // 模拟用户数据
-  const user = {
-    name: "哈哈哈",
-    avatar: "https://img.picgo.net/2025/05/05/touxiange48491887ed787ed.jpg",
-    email: "zhangsan@example.com",
-  };
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth <= 768);
+    handleResize();
+    window.addEventListener("resize", handleResize);
+
+    const loadUserData = () => {
+      const userData = localStorage.getItem("userProfile");
+      if (userData) {
+        try {
+          setUser(JSON.parse(userData));
+        } catch (e) {
+          console.error("解析用户数据失败", e);
+        }
+      }
+    };
+
+    loadUserData();
+    window.addEventListener("storage", (e) => {
+      if (e.key === "userProfile") loadUserData();
+    });
+
+    return () => {
+      window.removeEventListener("resize", handleResize);
+      window.removeEventListener("storage", () => {});
+    };
+  }, []);
+
   const handleSignOut = async () => {
     const result = await signOut();
     if (result.success) {
-      // 重定向到登录页
-      navigate("/login", { replace: true });
-    } else {
-      alert(`退出失败: ${result.error}`);
+      localStorage.removeItem("userProfile");
     }
+    navigate("/login", { replace: true });
   };
+
+  const handleMobileClick = () => {
+    if (isMobile) setShowDropdown(false);
+  };
+
+  const getUserAvatar = () =>
+    user?.avatar_url ||
+    "https://img.picgo.net/2025/05/05/touxiange48491887ed787ed.jpg";
+  const getUserName = () => user?.name || "哈哈哈";
+  const getUserEmail = () => user?.email || "zhangsan@example.com";
+
   return (
-    <Navbar bg="grey" expand="lg">
-      <Container>
-        <Nav
-          variant="pills"
-          activeKey={location.pathname}
-          className="custom-nav w-100"
-        >
-          {/* 导航项保持不变 */}
-          <Nav.Item className="nav-item-flex">
+    <Navbar bg="light" expand="lg" sticky="top" className="border-bottom">
+      <Container className="d-flex justify-content-between">
+        <Nav activeKey={location.pathname} className="flex-grow-1">
+          <Nav.Item>
             <Nav.Link
               as={Link}
               to="/"
               eventKey="/home"
-              className="nav-hover"
+              onClick={handleMobileClick}
             >
               首页
             </Nav.Link>
           </Nav.Item>
-          <Nav.Item className="nav-item-flex">
-            <Nav.Link as={Link} to="/log" eventKey="/log" className="nav-hover">
+          <Nav.Item>
+            <Nav.Link
+              as={Link}
+              to="/log"
+              eventKey="/log"
+              onClick={handleMobileClick}
+            >
               日志
             </Nav.Link>
           </Nav.Item>
-          <Nav.Item className="nav-item-flex">
-            <Nav.Link eventKey="3" className="nav-hover" disabled>
-              详细信息
+          <Nav.Item>
+            <Nav.Link
+              as={Link}
+              to="/help/web/intro"
+              eventKey="/help"
+              onClick={handleMobileClick}
+            >
+              帮助中心
             </Nav.Link>
           </Nav.Item>
-          <NavDropdown
-            title="更多"
-            id="nav-dropdown"
-            className="nav-dropdown-flex"
-            disabled
-          >
-            <NavDropdown.Item eventKey="4.1" className="dropdown-hover">
-              动作
-            </NavDropdown.Item>
-            <NavDropdown.Item eventKey="4.2" className="dropdown-hover">
-              其他操作
-            </NavDropdown.Item>
-            <NavDropdown.Item eventKey="4.3" className="dropdown-hover">
-              其他内容
-            </NavDropdown.Item>
-          </NavDropdown>
         </Nav>
 
-        {/* 头像及下拉菜单区域 */}
         <div
-          className="avatar-container position-relative"
-          onMouseEnter={() => setShowDropdown(true)}
-          onMouseLeave={() => setShowDropdown(false)}
+          className="d-flex align-items-center"
+          onMouseEnter={() => !isMobile && setShowDropdown(true)}
+          onMouseLeave={() => !isMobile && setShowDropdown(false)}
+          onClick={() => isMobile && setShowDropdown(!showDropdown)}
         >
           <NavDropdown
             show={showDropdown}
             align="end"
             id="user-dropdown"
-            className="dropdown-menu-custom"
             title={
               <Image
-                src={user.avatar}
-                className="main-avatar"
+                src={getUserAvatar()}
                 roundedCircle
                 alt="用户头像"
-                style={{ width: "40px", height: "40px" }}
+                width={40}
+                height={40}
               />
             }
+            className="ms-3"
           >
-            {/* <div className="px-3 py-2">
-              <div className="fw-bold">{user.name}</div>
-              <div className="text-muted small">{user.email}</div>
-            </div> */}
-            {/* <NavDropdown.Divider />
-            <NavDropdown.Item as={Link} to="/profile">
-              个人资料
-            </NavDropdown.Item>
-            <NavDropdown.Item as={Link} to="/settings">
-              账号设置
-            </NavDropdown.Item>
-            <NavDropdown.Divider /> */}
+            <div className="px-3 py-2 text-end">
+              <div className="fw-bold">{getUserName()}</div>
+              <div className="text-muted small">{getUserEmail()}</div>
+            </div>
+            <NavDropdown.Divider />
             <NavDropdown.Item className="text-danger" onClick={handleSignOut}>
               退出登录
             </NavDropdown.Item>

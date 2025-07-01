@@ -13,6 +13,17 @@ import {
 } from "react-bootstrap";
 import "bootstrap/dist/css/bootstrap.min.css";
 
+// 定义用户类型
+export interface UserProfile {
+  id: string;
+  email: string;
+  username: string;
+  name: string;
+  avatar_url: string;
+  created_at: string;
+  updated_at: string;
+}
+
 export default function Login() {
   const [loginInput, setLoginInput] = useState("");
   const [password, setPassword] = useState("");
@@ -31,7 +42,7 @@ export default function Login() {
   }
 
   const state = location.state as LocationState;
-  const from = state?.from?.pathname || "/home";
+  const from = state?.from?.pathname || "/";
 
   // 邮箱格式验证正则表达式
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -61,6 +72,7 @@ export default function Login() {
 
     try {
       let loginEmail = loginInput.trim();
+      let userId = "";
       let errorMessage = "";
 
       // 根据检测到的模式进行相应处理
@@ -70,7 +82,7 @@ export default function Login() {
         // 查询用户名对应的邮箱
         const { data, error: queryError } = await supabase
           .from("users")
-          .select("email")
+          .select("email, id")
           .eq("username", loginEmail)
           .single();
 
@@ -80,21 +92,55 @@ export default function Login() {
         }
 
         loginEmail = data.email as string;
+        userId = data.id as string;
       } else {
         errorMessage = "请输入有效的邮箱或用户名";
         throw new Error(errorMessage);
       }
 
       // 使用邮箱进行登录
-      const { error: authError } = await supabase.auth.signInWithPassword({
-        email: loginEmail,
-        password,
-      });
+      const { error: authError } =
+        await supabase.auth.signInWithPassword({
+          email: loginEmail,
+          password,
+        });
 
       if (authError) {
         errorMessage = authError.message;
         throw new Error(errorMessage);
       }
+
+      // 如果通过用户名登录，我们已经获取了用户ID
+      // 如果通过邮箱登录，我们需要查询用户ID
+      if (loginMode === "email") {
+        const { data: userData, error: userError } = await supabase
+          .from("users")
+          .select("id")
+          .eq("email", loginEmail)
+          .single();
+
+        if (userError) {
+          errorMessage = "无法获取用户信息";
+          throw new Error(errorMessage);
+        }
+
+        userId = userData.id;
+      }
+
+      // 获取完整的用户信息
+      const { data: profileData, error: profileError } = await supabase
+        .from("users")
+        .select("*")
+        .eq("id", userId)
+        .single();
+
+      if (profileError) {
+        errorMessage = "无法获取用户信息";
+        throw new Error(errorMessage);
+      }
+
+      // 将用户信息存储在本地存储中
+      localStorage.setItem("userProfile", JSON.stringify(profileData));
 
       navigate(from, { replace: true });
     } catch (error) {
@@ -202,14 +248,6 @@ export default function Login() {
                 </Button>
               </Form>
             </Card.Body>
-            {/* <Card.Footer className="bg-white border-top-0 text-center py-4">
-              <p className="text-muted">
-                还没有账户?{" "}
-                <a href="/register" className="text-primary font-weight-bold">
-                  立即注册
-                </a>
-              </p>
-            </Card.Footer> */}
           </Card>
         </Col>
       </Row>

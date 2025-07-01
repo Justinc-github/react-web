@@ -1,15 +1,6 @@
 import { Modal } from "react-bootstrap";
 import { FC, useState, useEffect, useRef, useCallback } from "react";
-import {
-  FaDownload,
-  FaSearchPlus,
-  FaSearchMinus,
-  FaTimes,
-  FaSpinner,
-  FaCompress,
-  FaUndo,
-  FaExpandArrowsAlt,
-} from "react-icons/fa";
+import { FaSpinner, FaCompress, FaExpandArrowsAlt } from "react-icons/fa";
 
 interface ImageModalProps {
   show: boolean;
@@ -40,92 +31,77 @@ const ImageModal: FC<ImageModalProps> = ({ show, onHide, imgUrl }) => {
   const containerRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
-    const mobile =
-      /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
-        navigator.userAgent
-      );
-    setIsMobile(mobile);
+    setIsMobile(/Android|iPhone|iPad|iPod/i.test(navigator.userAgent));
   }, []);
 
   useEffect(() => {
     if (!show) return;
-    const updateContainerSize = () => {
+    const updateSize = () => {
       if (containerRef.current) {
         setContainerWidth(containerRef.current.clientWidth);
         setContainerHeight(containerRef.current.clientHeight);
       }
     };
-    updateContainerSize();
-    window.addEventListener("resize", updateContainerSize);
-    return () => window.removeEventListener("resize", updateContainerSize);
+    updateSize();
+    window.addEventListener("resize", updateSize);
+    return () => window.removeEventListener("resize", updateSize);
   }, [show]);
 
-  const resetTransform = useCallback(() => {
-    setScale(1);
-    setTranslateX(0);
-    setTranslateY(0);
-  }, []);
-
-  const zoomIn = useCallback(() => {
-    setScale((prev) => Math.min(prev * 1.2, maxScale));
-  }, [maxScale]);
-
-  const zoomOut = useCallback(() => {
-    setScale((prev) => Math.max(prev / 1.2, minScale));
-  }, [minScale]);
-
-  const downloadImage = async () => {
-    try {
-      const response = await fetch(imgUrl);
-      const blob = await response.blob();
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement("a");
-      link.href = url;
-      const filename = imgUrl.split("/").pop() || "download.jpg";
-      link.download = filename.includes(".") ? filename : `${filename}.jpg`;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      URL.revokeObjectURL(url);
-    } catch (error) {
-      console.error("下载失败:", error);
-      window.open(imgUrl, "_blank")?.focus();
-    }
-  };
-
   const handleDragStart = (e: React.MouseEvent | React.TouchEvent) => {
-    if (
-      !isPinching &&
-      e.nativeEvent instanceof MouseEvent &&
-      e.nativeEvent.button === 0
-    ) {
-      const point = e.nativeEvent;
-      setStartX(point.clientX - translateX);
-      setStartY(point.clientY - translateY);
-      setIsDragging(true);
+    let clientX: number, clientY: number;
+
+    if ("touches" in e && e.touches.length === 1) {
+      clientX = e.touches[0].clientX;
+      clientY = e.touches[0].clientY;
+    } else if ("clientX" in e.nativeEvent) {
+      if ((e.nativeEvent as MouseEvent).button !== 0) return;
+      clientX = (e.nativeEvent as MouseEvent).clientX;
+      clientY = (e.nativeEvent as MouseEvent).clientY;
+    } else {
+      return;
     }
+
+    const rect = containerRef.current?.getBoundingClientRect();
+    if (!rect) return;
+
+    const offsetX = clientX - rect.left;
+    const offsetY = clientY - rect.top;
+
+    setStartX(offsetX - translateX);
+    setStartY(offsetY - translateY);
+    setIsDragging(true);
   };
 
   const handleDragMove = (e: React.MouseEvent | React.TouchEvent) => {
-    if (isDragging && !isPinching) {
-      let point: { clientX: number; clientY: number };
-      if ("touches" in e.nativeEvent && e.nativeEvent.touches.length > 0) {
-        point = e.nativeEvent.touches[0];
-      } else {
-        point = e.nativeEvent as MouseEvent;
-      }
-      const newX = point.clientX - startX;
-      const newY = point.clientY - startY;
+    if (!isDragging) return;
 
-      const maxX = Math.max((imgWidth * scale - containerWidth) / 2, 0);
-      const maxY = Math.max((imgHeight * scale - containerHeight) / 2, 0);
+    let clientX: number, clientY: number;
 
-      setTranslateX(Math.max(-maxX, Math.min(maxX, newX)));
-      setTranslateY(Math.max(-maxY, Math.min(maxY, newY)));
+    if ("touches" in e && e.touches.length === 1) {
+      clientX = e.touches[0].clientX;
+      clientY = e.touches[0].clientY;
+    } else if ("clientX" in e.nativeEvent) {
+      clientX = (e.nativeEvent as MouseEvent).clientX;
+      clientY = (e.nativeEvent as MouseEvent).clientY;
+    } else {
+      return;
     }
-  };
 
-  const handleDragEnd = () => setIsDragging(false);
+    const rect = containerRef.current?.getBoundingClientRect();
+    if (!rect) return;
+
+    const offsetX = clientX - rect.left;
+    const offsetY = clientY - rect.top;
+
+    const newX = offsetX - startX;
+    const newY = offsetY - startY;
+
+    const maxX = Math.max((imgWidth * scale - containerWidth) / 2, 0);
+    const maxY = Math.max((imgHeight * scale - containerHeight) / 2, 0);
+
+    setTranslateX(Math.max(-maxX, Math.min(maxX, newX)));
+    setTranslateY(Math.max(-maxY, Math.min(maxY, newY)));
+  };
 
   const handleTouchStart = (e: React.TouchEvent<HTMLImageElement>) => {
     if (e.touches.length === 2) {
@@ -137,10 +113,7 @@ const ImageModal: FC<ImageModalProps> = ({ show, onHide, imgUrl }) => {
       setIsPinching(true);
       setIsDragging(false);
     } else if (e.touches.length === 1) {
-      const touch = e.touches[0];
-      setStartX(touch.clientX - translateX);
-      setStartY(touch.clientY - translateY);
-      setIsDragging(true);
+      handleDragStart(e);
     }
   };
 
@@ -160,21 +133,13 @@ const ImageModal: FC<ImageModalProps> = ({ show, onHide, imgUrl }) => {
 
       const centerX = (t1.clientX + t2.clientX) / 2 - container.left;
       const centerY = (t1.clientY + t2.clientY) / 2 - container.top;
-
       const deltaScale = newScale / scale;
+
       setTranslateX((prev) => prev + (centerX - prev) * (1 - deltaScale));
       setTranslateY((prev) => prev + (centerY - prev) * (1 - deltaScale));
       setScale(newScale);
     } else if (e.touches.length === 1 && isDragging) {
-      const touch = e.touches[0];
-      const newX = touch.clientX - startX;
-      const newY = touch.clientY - startY;
-
-      const maxX = Math.max((imgWidth * scale - containerWidth) / 2, 0);
-      const maxY = Math.max((imgHeight * scale - containerHeight) / 2, 0);
-
-      setTranslateX(Math.max(-maxX, Math.min(maxX, newX)));
-      setTranslateY(Math.max(-maxY, Math.min(maxY, newY)));
+      handleDragMove(e);
     }
   };
 
@@ -188,6 +153,7 @@ const ImageModal: FC<ImageModalProps> = ({ show, onHide, imgUrl }) => {
       e.preventDefault();
       const delta = e.deltaY < 0 ? 1.1 : 0.9;
       const newScale = Math.min(Math.max(scale * delta, minScale), maxScale);
+
       const container = containerRef.current;
       if (!container) return;
       const rect = container.getBoundingClientRect();
@@ -232,10 +198,12 @@ const ImageModal: FC<ImageModalProps> = ({ show, onHide, imgUrl }) => {
 
   useEffect(() => {
     if (!show) {
-      resetTransform();
+      setScale(1);
+      setTranslateX(0);
+      setTranslateY(0);
       setImageLoaded(false);
     }
-  }, [show, resetTransform]);
+  }, [show]);
 
   return (
     <Modal
@@ -248,54 +216,13 @@ const ImageModal: FC<ImageModalProps> = ({ show, onHide, imgUrl }) => {
       backdropClassName="bg-black/80 backdrop-blur-sm"
     >
       <Modal.Body className="text-center p-0 position-relative">
-        <div className="position-absolute top-0 left-0 w-full p-3 flex justify-between items-center z-10">
-          <div className="flex items-center space-x-2">
-            <button
-              onClick={onHide}
-              title="关闭 (ESC)"
-              className="bg-white p-2 rounded-full"
-            >
-              <FaTimes />
-            </button>
-            <button
-              onClick={resetTransform}
-              title="重置视图 (0)"
-              className="bg-white p-2 rounded-full"
-            >
-              <FaUndo />
-            </button>
-            <div className="bg-white text-gray-800 rounded-full px-3 py-1 text-sm font-medium">
-              {Math.round(scale * 100)}%
-            </div>
-          </div>
-          <div className="flex space-x-2">
-            <button
-              onClick={zoomOut}
-              title="缩小 (-)"
-              className="bg-white p-2 rounded-full"
-            >
-              <FaSearchMinus />
-            </button>
-            <button
-              onClick={zoomIn}
-              title="放大 (+)"
-              className="bg-white p-2 rounded-full"
-            >
-              <FaSearchPlus />
-            </button>
-            <button
-              onClick={downloadImage}
-              title="保存图片"
-              className="bg-white p-2 rounded-full"
-            >
-              <FaDownload />
-            </button>
-          </div>
-        </div>
-
         <div
           ref={containerRef}
-          className="relative w-full h-[90vh] overflow-hidden bg-gray-900 touch-none"
+          className="relative w-full h-[90vh] overflow-hidden bg-black touch-none select-none"
+          onMouseDown={handleDragStart}
+          onMouseMove={handleDragMove}
+          onMouseUp={() => setIsDragging(false)}
+          onMouseLeave={() => setIsDragging(false)}
           onTouchStart={handleTouchStart}
           onTouchMove={handleTouchMove}
           onTouchEnd={handleTouchEnd}
@@ -310,13 +237,6 @@ const ImageModal: FC<ImageModalProps> = ({ show, onHide, imgUrl }) => {
             src={imgUrl}
             alt="图片"
             onLoad={handleImageLoad}
-            onMouseDown={handleDragStart}
-            onMouseMove={handleDragMove}
-            onMouseUp={handleDragEnd}
-            onMouseLeave={handleDragEnd}
-            onTouchStart={handleTouchStart}
-            onTouchMove={handleTouchMove}
-            onTouchEnd={handleTouchEnd}
             style={{
               position: "absolute",
               left: "50%",
@@ -349,7 +269,7 @@ const ImageModal: FC<ImageModalProps> = ({ show, onHide, imgUrl }) => {
             ) : (
               <>
                 <FaCompress className="inline-block mr-2" />{" "}
-                鼠标滚轮缩放，拖动移动，ESC关闭
+                鼠标滚轮缩放，左键拖动
               </>
             )}
           </div>

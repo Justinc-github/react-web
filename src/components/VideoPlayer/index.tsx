@@ -404,7 +404,7 @@ const VideoPlayerDemoPage: React.FC = () => {
       {
         id: 1,
         title: "学长送别视频",
-        src: "https://ty.ly93.cc/1640/923691200015393292/bye.mp4",
+        src: "https://lz.qaiu.top/parser?url=https://cloud.189.cn/web/share?code=2IJVJn2IrMjq（访问码：2c4w）",
         poster:
           "https://images.unsplash.com/photo-1505142468610-359e7f316c0d?ixlib=rb-4.0.3",
         duration: "6:03",

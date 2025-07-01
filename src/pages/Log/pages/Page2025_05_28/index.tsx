@@ -87,16 +87,17 @@ export default function Page2025_05_28() {
     marginTop: "5px",
   } as const;
 
+  const imgUrl = (urlName: string): string => {
+    return `https://i.postimg.cc/${urlName}`;
+  };
   const endBlockStyle = {
     textAlign: "center",
-    backgroundImage:
-      "url('https://img.picgo.net/2025/06/06/f69d3f049838e5019ea62683c051820259d695ef984d6c7d.gif')",
+    backgroundImage: `url('${imgUrl("b8XCxgTq/image.gif?dl=1")}')`,
     backgroundRepeat: "no-repeat",
     backgroundPosition: "center",
     backgroundSize: "cover",
     padding: "20px",
   } as const;
-
   return (
     <div style={containerStyle}>
       <div className="form-floating">
@@ -135,13 +136,11 @@ export default function Page2025_05_28() {
             }}
           >
             <img
-              src="https://img.picgo.net/2025/06/06/df84fc5276e1f092adb699d3bc44dd2d2fcb0d01d26fa482.png"
+              src={imgUrl("pPZrZs84/image.png?dl=1")}
               alt="鹏哥小课堂"
               style={{ width: "140px", height: "auto", objectFit: "contain" }}
               onClick={() =>
-                handleImageClick(
-                  "https://img.picgo.net/2025/06/06/df84fc5276e1f092adb699d3bc44dd2d2fcb0d01d26fa482.png"
-                )
+                handleImageClick(imgUrl("pPZrZs84/image.png?dl=1"))
               }
             />
           </div>
@@ -170,13 +169,11 @@ export default function Page2025_05_28() {
           <div style={galleryStyle}>
             <div
               onClick={() =>
-                handleImageClick(
-                  "https://img.picgo.net/2025/06/06/6a66b40788ad0807df90e7b8e818cfbe3a0e662789ad4fca.jpg"
-                )
+                handleImageClick("https://i.postimg.cc/VfqzfR1m/image.jpg?dl=1")
               }
             >
               <img
-                src="https://img.picgo.net/2025/06/06/6a66b40788ad0807df90e7b8e818cfbe3a0e662789ad4fca.jpg"
+                src="https://i.postimg.cc/VfqzfR1m/image.jpg?dl=1"
                 alt="幕后"
                 style={{
                   ...photo1Style,
@@ -214,13 +211,11 @@ export default function Page2025_05_28() {
           <div style={galleryStyle}>
             <div
               onClick={() =>
-                handleImageClick(
-                  "https://img.picgo.net/2025/06/06/3ed9c60a7647f1c625240506f8eee22f3ac4c4cd1520c734.jpg"
-                )
+                handleImageClick("https://i.postimg.cc/pVPRpFX8/image.jpg?dl=1")
               }
             >
               <img
-                src="https://img.picgo.net/2025/06/06/3ed9c60a7647f1c625240506f8eee22f3ac4c4cd1520c734.jpg"
+                src="https://i.postimg.cc/pVPRpFX8/image.jpg?dl=1"
                 alt="曝光"
                 style={{
                   ...photo1Style,
@@ -267,13 +262,11 @@ export default function Page2025_05_28() {
           <div style={{ ...galleryStyle, flexDirection: "column" }}>
             <div
               onClick={() =>
-                handleImageClick(
-                  "https://img.picgo.net/2025/06/06/26d5f9c457db730cb.jpg"
-                )
+                handleImageClick("https://i.postimg.cc/FmxhwDDx/2.jpg?dl=1")
               }
             >
               <img
-                src="https://img.picgo.net/2025/06/06/26d5f9c457db730cb.jpg"
+                src="https://i.postimg.cc/FmxhwDDx/2.jpg?dl=1"
                 alt="激情演讲"
                 style={{
                   ...photo1Style,
@@ -293,13 +286,11 @@ export default function Page2025_05_28() {
 
             <div
               onClick={() =>
-                handleImageClick(
-                  "https://img.picgo.net/2025/06/06/335b971c809adc454.jpg"
-                )
+                handleImageClick("https://i.postimg.cc/PdChphh6/3.jpg?dl=1")
               }
             >
               <img
-                src="https://img.picgo.net/2025/06/06/335b971c809adc454.jpg"
+                src="https://i.postimg.cc/PdChphh6/3.jpg?dl=1"
                 alt="语重心长"
                 style={{
                   ...photo1Style,
@@ -318,7 +309,7 @@ export default function Page2025_05_28() {
             </div>
 
             <img
-              src="https://img.picgo.net/2025/06/06/4dafa7ebff4d97494.png"
+              src="https://i.postimg.cc/F9c4pZY3/4.png?dl=1"
               alt="演讲张力"
               style={{
                 ...photo1Style,
@@ -332,9 +323,7 @@ export default function Page2025_05_28() {
                 (e.currentTarget.style.transform = "scale(1)")
               }
               onClick={() =>
-                handleImageClick(
-                  "https://img.picgo.net/2025/06/06/4dafa7ebff4d97494.png"
-                )
+                handleImageClick("https://i.postimg.cc/F9c4pZY3/4.png?dl=1")
               }
             />
             <br />
@@ -344,13 +333,11 @@ export default function Page2025_05_28() {
           <div style={memeStyle}>
             <div
               onClick={() =>
-                handleImageClick(
-                  "https://img.picgo.net/2025/06/06/2279f17aeffd1a406.jpg"
-                )
+                handleImageClick("https://i.postimg.cc/jqqYsYZ4/1.jpg?dl=1")
               }
             >
               <img
-                src="https://img.picgo.net/2025/06/06/2279f17aeffd1a406.jpg"
+                src="https://i.postimg.cc/jqqYsYZ4/1.jpg?dl=1"
                 alt="是是是"
                 style={photo2Style}
                 onMouseEnter={(e) =>
@@ -363,13 +350,11 @@ export default function Page2025_05_28() {
             </div>
             <div
               onClick={() =>
-                handleImageClick(
-                  "https://img.picgo.net/2025/06/06/16b82631380e3ca7a.jpg"
-                )
+                handleImageClick("https://i.postimg.cc/kJvd3gF5/2.jpg?dl=1")
               }
             >
               <img
-                src="https://img.picgo.net/2025/06/06/16b82631380e3ca7a.jpg"
+                src="https://i.postimg.cc/kJvd3gF5/2.jpg?dl=1"
                 alt="对对对"
                 style={photo2Style}
                 onMouseEnter={(e) =>
@@ -394,13 +379,11 @@ export default function Page2025_05_28() {
           <div style={{ ...galleryStyle, flexDirection: "column" }}>
             <div
               onClick={() =>
-                handleImageClick(
-                  "https://img.picgo.net/2025/06/06/1dafa7c3960880db22d72282831076683cdb033bccad7c16.jpg"
-                )
+                handleImageClick("https://i.postimg.cc/GcvWGmfj/image.jpg?dl=1")
               }
             >
               <img
-                src="https://img.picgo.net/2025/06/06/1dafa7c3960880db22d72282831076683cdb033bccad7c16.jpg"
+                src="https://i.postimg.cc/GcvWGmfj/image.jpg?dl=1"
                 alt="来器材了"
                 style={{
                   ...photo1Style,
@@ -418,13 +401,11 @@ export default function Page2025_05_28() {
 
             <div
               onClick={() =>
-                handleImageClick(
-                  "https://img.picgo.net/2025/06/06/1fe4b863bb4c08a17.jpg"
-                )
+                handleImageClick("https://i.postimg.cc/mbxxPHmD/1.jpg?dl=1")
               }
             >
               <img
-                src="https://img.picgo.net/2025/06/06/1fe4b863bb4c08a17.jpg"
+                src="https://i.postimg.cc/mbxxPHmD/1.jpg?dl=1"
                 alt="二阶段"
                 style={{
                   ...photo1Style,
@@ -438,13 +419,11 @@ export default function Page2025_05_28() {
 
             <div
               onClick={() =>
-                handleImageClick(
-                  "https://img.picgo.net/2025/06/06/4cc670b4cd56dc8ac4548af04c3d0abb14e0cce4b05438d1.jpg"
-                )
+                handleImageClick("https://i.postimg.cc/D2FTCGLN/image.jpg?dl=1")
               }
             >
               <img
-                src="https://img.picgo.net/2025/06/06/4cc670b4cd56dc8ac4548af04c3d0abb14e0cce4b05438d1.jpg"
+                src="https://i.postimg.cc/D2FTCGLN/image.jpg?dl=1"
                 alt="共同讲解"
                 style={{
                   ...photo1Style,
@@ -458,13 +437,11 @@ export default function Page2025_05_28() {
 
             <div
               onClick={() =>
-                handleImageClick(
-                  "https://img.picgo.net/2025/06/06/8f01339e248b487e7.png"
-                )
+                handleImageClick("https://i.postimg.cc/zz2YXP6m/8.png?dl=1")
               }
             >
               <img
-                src="https://img.picgo.net/2025/06/06/8f01339e248b487e7.png"
+                src="https://i.postimg.cc/zz2YXP6m/8.png?dl=1"
                 alt="特写"
                 style={{
                   ...photo1Style,
@@ -476,7 +453,7 @@ export default function Page2025_05_28() {
               <div style={remarkStyle}>
                 高尚：
                 <img
-                  src="https://img.picgo.net/2025/06/06/3ed5003d21bb52795b467368fdf58ed929803c881a94e3aa.png"
+                  src="https://i.postimg.cc/XWsb8pJ2/image.png?dl=1"
                   alt="嘟嘴"
                   style={{
                     width: "25px",
@@ -491,13 +468,11 @@ export default function Page2025_05_28() {
 
             <div
               onClick={() =>
-                handleImageClick(
-                  "https://img.picgo.net/2025/06/06/9e6d953c57fe334bb.png"
-                )
+                handleImageClick("https://i.postimg.cc/38czH00Y/9.png?dl=1")
               }
             >
               <img
-                src="https://img.picgo.net/2025/06/06/9e6d953c57fe334bb.png"
+                src="https://i.postimg.cc/38czH00Y/9.png?dl=1"
                 alt="演示"
                 style={{
                   ...photo1Style,
@@ -506,22 +481,16 @@ export default function Page2025_05_28() {
                 }}
               />
               <br />
-              <p style={remarkStyle}>
-                现场展示机器
-                <br />
-                (出了点小问题)
-              </p>
+              <p style={remarkStyle}>现场展示机器</p>
             </div>
 
             <div
               onClick={() =>
-                handleImageClick(
-                  "https://img.picgo.net/2025/06/06/20a347657f25eb13d50acbe988100ff0de67736f2226360c.jpg"
-                )
+                handleImageClick("https://i.postimg.cc/ZTYQBxrJ/image.jpg?dl=1")
               }
             >
               <img
-                src="https://img.picgo.net/2025/06/06/20a347657f25eb13d50acbe988100ff0de67736f2226360c.jpg"
+                src="https://i.postimg.cc/ZTYQBxrJ/image.jpg?dl=1"
                 alt="共同讲解"
                 style={{
                   ...photo1Style,
@@ -573,7 +542,7 @@ export default function Page2025_05_28() {
           </div>
           <div style={{ textAlign: "center", margin: "20px 0" }}>
             <img
-              src="https://img.picgo.net/2025/06/06/d9907064bfcd08de9810775d15d6b6fbb7f878e30f5b7e1e.jpg"
+              src="https://i.postimg.cc/gY0MkkWJ/image.jpg?dl=1"
               alt="不行了"
               style={{
                 ...photo3Style,
@@ -581,9 +550,7 @@ export default function Page2025_05_28() {
                 margin: "0 auto", // 水平居中
               }}
               onClick={() =>
-                handleImageClick(
-                  "https://img.picgo.net/2025/06/06/d9907064bfcd08de9810775d15d6b6fbb7f878e30f5b7e1e.jpg"
-                )
+                handleImageClick("https://i.postimg.cc/gY0MkkWJ/image.jpg?dl=1")
               }
             />
             <br />
@@ -600,13 +567,11 @@ export default function Page2025_05_28() {
           >
             <div
               onClick={() =>
-                handleImageClick(
-                  "https://img.picgo.net/2025/06/06/f4b45bee9d30695109eec7f3d26e423acc38d373f2465682.jpg"
-                )
+                handleImageClick("https://i.postimg.cc/TfqQVW21/image.jpg?dl=1")
               }
             >
               <img
-                src="https://img.picgo.net/2025/06/06/f4b45bee9d30695109eec7f3d26e423acc38d373f2465682.jpg"
+                src="https://i.postimg.cc/TfqQVW21/image.jpg?dl=1"
                 alt="大合照"
                 style={{
                   ...photo1Style,
@@ -620,13 +585,11 @@ export default function Page2025_05_28() {
 
             <div
               onClick={() =>
-                handleImageClick(
-                  "https://img.picgo.net/2025/06/06/1047d2a1c668c1ea824dddb62c394fd1c43f0d7e53a79243.jpg"
-                )
+                handleImageClick("https://i.postimg.cc/YtrRbqj3/image.jpg?dl=1")
               }
             >
               <img
-                src="https://img.picgo.net/2025/06/06/1047d2a1c668c1ea824dddb62c394fd1c43f0d7e53a79243.jpg"
+                src="https://i.postimg.cc/YtrRbqj3/image.jpg?dl=1"
                 alt="大合照"
                 style={{
                   ...photo1Style,

@@ -1,54 +1,63 @@
-# React + TypeScript + Vite
+# 代码结构
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+## 一、src
 
-Currently, two official plugins are available:
+### 1、components
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+> 此文件下放着所有的公共组件。
 
-## Expanding the ESLint configuration
+* TopNavBar：网站的顶部导航栏
+* Unauthorized：网站的错误页面
+* VideoPlayer：网页播放器
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+### 2、pages
 
-```js
-export default tseslint.config({
-  extends: [
-    // Remove ...tseslint.configs.recommended and replace with this
-    ...tseslint.configs.recommendedTypeChecked,
-    // Alternatively, use this for stricter rules
-    ...tseslint.configs.strictTypeChecked,
-    // Optionally, add this for stylistic rules
-    ...tseslint.configs.stylisticTypeChecked,
-  ],
-  languageOptions: {
-    // other options...
-    parserOptions: {
-      project: ['./tsconfig.node.json', './tsconfig.app.json'],
-      tsconfigRootDir: import.meta.dirname,
-    },
-  },
-})
-```
+> 每个功能界面
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+#### 2.1 Auth
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+> 用户的认证模块，例如登录注册等
 
-export default tseslint.config({
-  plugins: {
-    // Add the react-x and react-dom plugins
-    'react-x': reactX,
-    'react-dom': reactDom,
-  },
-  rules: {
-    // other rules...
-    // Enable its recommended typescript rules
-    ...reactX.configs['recommended-typescript'].rules,
-    ...reactDom.configs.recommended.rules,
-  },
-})
-```
+##### 2.1.1 components
+
+* requireAuth.tsx：用户验证守卫
+
+##### 2.1.2 utils
+
+* logout.ts：退出函数
+* supabaseClient.ts：supabase链接函数
+* userCurrent.ts：获取当前用户函数
+
+#### 2.2 help
+
+> 帮助界面，App与网页共用
+
+##### 2.2.1 components
+
+* docs：对应的md文档，修改帮助文档内容
+* pages：对应的托管函数
+
+##### 2.2.2 utils
+
+* 共用的模板
+
+#### 2.3 Home
+
+> 网站的首页
+
+#### 2.4 Music
+
+> 音乐界面
+
+#### 2.5 WindowsDownload
+
+> 桌面应用版本托管界面
+
+### 3、routes
+
+> 对所有的路由进行统一管理
+
+### 4、utils
+
+> 共用的工具
+

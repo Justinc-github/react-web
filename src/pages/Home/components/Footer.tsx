@@ -1,6 +1,8 @@
 import styles from "../css/Footer.module.css";
 
 export default function Footer() {
+  const footSvg =
+    "https://cdn.jsdelivr.net/gh/Justinc-github/project_resources@main/网页/图标/";
   return (
     <footer className={styles.footer}>
       <div className={styles["footer-container"]}>
@@ -11,14 +13,14 @@ export default function Footer() {
         <div className={styles["footer-section"]}>
           <h3>下载</h3>
           <div>
-            <a href="https://www.pgyer.com/zhong_zhi">
+            <a href="https://www.pgyer.com/zhong_zhi" target="_blank">
               <img
                 style={{ height: "50px", width: "50px" }}
                 src="favicon.svg"
                 alt="android"
               />
             </a>
-            <a href="/download">
+            <a href="/download" target="_blank">
               <img
                 style={{ height: "30px", width: "30px" }}
                 src="https://image.baidu.com/search/down?url=https://lz.sinaimg.cn/large/008txcFbgy1i2w7fqf61xj303k03kq2t.jpg"
@@ -29,17 +31,51 @@ export default function Footer() {
         </div>
         <div className={styles["footer-section"]}>
           <h3>联系方式</h3>
-          <p>qq群：1004552592</p>
-          {/* <p>邮箱：contact@yourcompany.com</p> */}
-          <p>地址：辽宁工业大学-第五教学楼</p>
+          <p>
+            <img
+              style={{
+                height: "20px",
+                width: "20px",
+                verticalAlign: "middle",
+                position: "relative",
+                top: "-7px",
+              }}
+              src={footSvg + "QQ.svg"}
+              alt="QQ"
+            />
+            <span style={{ verticalAlign: "middle", marginLeft: "6px" }}>
+              1004552592
+            </span>
+          </p>
+          <p>
+            <img
+              style={{
+                height: "20px",
+                width: "20px",
+                verticalAlign: "middle",
+                position: "relative",
+                top: "-7px",
+              }}
+              src={footSvg + "地址.svg"}
+              alt="地址"
+            />
+            <span style={{ verticalAlign: "middle", marginLeft: "6px" }}>
+              辽宁工业大学-第五教学楼
+            </span>
+          </p>
         </div>
         <div className={styles["footer-section"]}>
           <h3>关注我们</h3>
-          <a href="#" aria-label="CSDN" title="CSDN">
+          <a
+            href="https://blog.csdn.net/lalaone?type=blog"
+            target="_blank"
+            aria-label="CSDN"
+            title="CSDN"
+          >
             <img
               style={{ height: "30px", width: "30px" }}
-              src="https://image.baidu.com/search/down?url=https://lz.sinaimg.cn/large/008txcFbgy1i2w7bzg433j303k03kmx0.jpg"
-              alt=""
+              src={footSvg + "csdn.svg"}
+              alt="CSDN"
             />
           </a>
         </div>

@@ -87,6 +87,17 @@ export default function TopNavbar() {
           </Nav.Item>
           <Nav.Item>
             <Nav.Link
+              as="a"
+              href="https://file.zhongzhi.site/"
+              target="_blank"
+              eventKey="/file"
+              onClick={handleMobileClick}
+            >
+              直链解析
+            </Nav.Link>
+          </Nav.Item>
+          <Nav.Item>
+            <Nav.Link
               as={Link}
               to="/help/web/intro"
               eventKey="/help"

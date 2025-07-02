@@ -1,6 +1,7 @@
 import React, { useState, useCallback, useEffect, useRef } from "react";
 import TopNavbar from "../TopNavBar";
 import Footer from "../../pages/Home/components/Footer";
+import styles from "./VideoPlayer.module.css"; // 引入模块化CSS
 
 // 视频播放器组件
 interface VideoPlayerProps {
@@ -284,70 +285,67 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
   return (
     <div
       ref={playerContainerRef}
-      className={`relative w-full max-w-4xl overflow-hidden rounded-lg bg-black ${className}`}
+      className={`${styles.videoContainer} ${className}`}
     >
       {/* 视频元素 */}
       <video
         ref={videoRef}
         src={src}
         poster={poster}
-        className="w-full h-full"
+        className="w-100"
         controls={controls}
-        onClick={() => {
-          // 视频点击事件现在由useEffect中的handleVideoClick处理
-          // 这里保留空函数或添加其他逻辑
-        }}
+        onClick={() => {}}
       />
 
       {/* 自定义控制条 */}
       {!controls && (
         <div
-          className={`absolute bottom-0 left-0 right-0 bg-black bg-opacity-50 transition-opacity duration-300 ${
-            showControls ? "opacity-100" : "opacity-0"
+          className={`${styles.controlsContainer} ${
+            showControls ? styles.controlsVisible : styles.controlsHidden
           }`}
         >
           {/* 进度条 */}
           <div
             ref={progressRef}
-            className="h-2 w-full bg-gray-700 cursor-pointer"
+            className={styles.progressBar}
             onClick={handleSeek}
           >
             <div
-              className="h-full bg-red-600"
+              className={styles.progress}
               style={{ width: `${(currentTime / duration) * 100}%` }}
             />
           </div>
 
           {/* 控制按钮区域 */}
-          <div className="flex items-center p-3 space-x-4">
+          <div className="d-flex align-items-center p-3 gap-3">
             <button
               onClick={(e) => {
-                e.stopPropagation(); // 阻止事件冒泡
+                e.stopPropagation();
                 togglePlayback();
               }}
-              className="text-white"
+              className="btn btn-link text-white p-0"
             >
               {isPlaying ? (
-                <PauseIcon className="w-6 h-6" />
+                <PauseIcon className={styles.iconSize} />
               ) : (
-                <PlayIcon className="w-6 h-6" />
+                <PlayIcon className={styles.iconSize} />
               )}
             </button>
 
-            <div className="flex items-center space-x-2">
+            <div className="d-flex align-items-center gap-2">
               <button
                 onClick={(e) => {
-                  e.stopPropagation(); // 阻止事件冒泡
+                  e.stopPropagation();
                   toggleMute();
                 }}
-                className="text-white"
+                className="btn btn-link text-white p-0"
               >
                 {isMuted || volume === 0 ? (
-                  <MuteIcon className="w-5 h-5" />
+                  <MuteIcon className={styles.iconSizeSm} />
                 ) : volume < 0.5 ? (
-                  <VolumeUpIcon className="w-5 h-5" />
+                  <VolumeUpIcon className={styles.iconSizeSm} />
                 ) : (
-                  <VolumeDownIcon className="w-5 h-5" />
+                  <VolumeDownIcon className={styles.iconSizeSm} />
                 )}
               </button>
               <input
@@ -357,7 +355,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
                 step="0.01"
                 value={volume}
                 onChange={handleVolumeChange}
-                className="w-20 accent-white"
+                className={styles.volumeSlider}
               />
             </div>
 
@@ -365,16 +363,16 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
               {formatTime(currentTime)} / {formatTime(duration)}
             </div>
 
-            <div className="flex-1" />
+            <div className="flex-grow-1" />
 
             <button
               onClick={(e) => {
-                e.stopPropagation(); // 阻止事件冒泡
+                e.stopPropagation();
                 toggleFullscreen();
               }}
-              className="text-white"
+              className="btn btn-link text-white p-0"
             >
-              <FullscreenIcon className="w-5 h-5" />
+              <FullscreenIcon className={styles.iconSizeSm} />
             </button>
           </div>
         </div>
@@ -406,9 +404,9 @@ const VideoPlayerDemoPage: React.FC = () => {
         title: "学长送别视频",
         src: "https://lz.qaiu.top/parser?url=https://cloud.189.cn/web/share?code=2IJVJn2IrMjq（访问码：2c4w）",
         poster:
-          "https://images.unsplash.com/photo-1505142468610-359e7f316c0d?ixlib=rb-4.0.3",
+          "https://cdn.jsdelivr.net/gh/Justinc-github/project_resources@main/网页/图片/视频/送21届学长.jpg",
         duration: "6:03",
-        gradient: "bg-gradient-to-r from-blue-600 via-teal-500 to-green-500",
+        gradient: styles.gradientBlue, // 使用模块化类名
       },
     ],
     []
@@ -418,37 +416,32 @@ const VideoPlayerDemoPage: React.FC = () => {
     videos.find((video) => video.id === currentVideo) || videos[0];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 to-gray-800 text-gray-100">
+    <div className={styles.pageContainer}>
       {/* 导航栏 */}
       <TopNavbar />
       {/* 主内容区 */}
-      <main className="max-w-7xl mx-auto px-4 py-8 w-full">
-        <div className="text-center mb-10">
-          <h2 className="text-3xl md:text-4xl font-bold mb-4">
+      <main className="container py-5">
+        <div className="text-center mb-5">
+          <h2 className="mb-3">
             沉浸式体验
-            <span className="bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent">
-              {" "}
-              我们的视频播放器
-            </span>
+            <span className={styles.gradientText}> 我们的视频播放器</span>
           </h2>
         </div>
 
         {/* 播放器部分 - 居中显示 */}
-        <div className="flex justify-center">
-          <div className="w-full max-w-4xl">
-            <div className="bg-gray-800 bg-opacity-50 p-6 rounded-xl shadow-2xl backdrop-blur">
-              <div className="mb-4">
-                <h3 className="text-xl font-semibold mb-1">
-                  正在播放: {currentVideoData.title}
-                </h3>
-                <div className="text-sm text-gray-400 flex items-center">
+        <div className="d-flex justify-content-center">
+          <div className="w-100" style={{ maxWidth: "800px" }}>
+            <div className={styles.playerWrapper}>
+              <div className="mb-3">
+                <h3 className="mb-1">正在播放: {currentVideoData.title}</h3>
+                <div className="text-secondary d-flex align-items-center">
                   <span>时长: {currentVideoData.duration}</span>
                   <span className="mx-2">•</span>
                   <span>作者：赵芷涵</span>
                 </div>
               </div>
 
-              <div className="aspect-video rounded-lg overflow-hidden relative">
+              <div className={styles.aspectContainer}>
                 <VideoPlayer
                   key={currentVideoData.id}
                   src={currentVideoData.src}
@@ -457,9 +450,9 @@ const VideoPlayerDemoPage: React.FC = () => {
                 />
               </div>
 
-              <div className="mt-4 p-4 bg-gray-900 bg-opacity-60 rounded-lg">
-                <h4 className="font-medium mb-2">视频描述:</h4>
-                <p className="text-gray-300 text-sm">
+              <div className={styles.description}>
+                <h4 className="mb-2">视频描述:</h4>
+                <p>
                   本视频承载了学长们在团队中的珍贵时光，记录了那些"美好"的瞬间，
                   同时寄托着我们对他们未来的深切祝福：愿这段旅程的终点成为新辉煌的起点，
                   愿他们在未来的征途上行稳致远、鹏程万里！
@@ -470,15 +463,16 @@ const VideoPlayerDemoPage: React.FC = () => {
         </div>
 
         {/* 视频库部分 */}
-        <div className="mt-16 max-w-4xl mx-auto">
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="text-2xl font-bold flex items-center">
+        <div className="mt-5" style={{ maxWidth: "800px" }}>
+          <div className="d-flex justify-content-between align-items-center mb-4">
+            <h2 className="d-flex align-items-center">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 fill="none"
                 viewBox="0 0 24 24"
                 stroke="currentColor"
-                className="h-6 w-6 mr-2 text-emerald-400"
+                className="me-2 text-success"
+                style={{ width: "24px", height: "24px" }}
               >
                 <path
                   strokeLinecap="round"
@@ -489,28 +483,27 @@ const VideoPlayerDemoPage: React.FC = () => {
               </svg>
               视频库
             </h2>
-            <div className="text-sm bg-gray-800 px-3 py-1 rounded-lg">
-              共 <span className="text-blue-400">{videos.length}</span> 个视频
+            <div className="badge bg-dark">
+              共 <span className="text-primary">{videos.length}</span> 个视频
             </div>
           </div>
 
-          <div className="grid grid-cols-1 gap-6">
+          <div className="d-grid gap-4">
             {videos.map((video) => (
               <div
                 key={video.id}
-                className={`rounded-xl overflow-hidden shadow-lg transform transition-all duration-300 hover:scale-105 ${
-                  currentVideo === video.id ? "ring-2 ring-blue-500" : ""
+                className={`${styles.videoCard} ${
+                  currentVideo === video.id ? styles.selected : ""
                 }`}
               >
-                <div
-                  className={`h-48 ${video.gradient} flex items-center justify-center`}
-                >
-                  <div className="bg-black bg-opacity-20 rounded-full p-4">
+                <div className={`${styles.videoThumbnail} ${video.gradient}`}>
+                  <div className={styles.playIcon}>
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
                       viewBox="0 0 24 24"
                       fill="currentColor"
-                      className="w-12 h-12 text-white"
+                      className="text-white"
+                      style={{ width: "48px", height: "48px" }}
                     >
                       <path
                         fillRule="evenodd"
@@ -520,22 +513,21 @@ const VideoPlayerDemoPage: React.FC = () => {
                     </svg>
                   </div>
                 </div>
-                <div className="p-4 bg-gray-800">
-                  <div className="flex justify-between items-start">
-                    <h3 className="font-medium text-xl mr-2">{video.title}</h3>
-                    <span className="bg-gray-700 text-sm px-2 py-1 rounded whitespace-nowrap">
-                      {video.duration}
-                    </span>
+                <div className={styles.videoInfo}>
+                  <div className="d-flex justify-content-between align-items-start">
+                    <h3 className="me-2">{video.title}</h3>
+                    <span className="badge bg-secondary">{video.duration}</span>
                   </div>
-                  <div className="mt-2 flex justify-between text-sm text-gray-400">
+                  <div className="d-flex justify-content-between text-secondary">
                     <span>作者：赵芷涵</span>
-                    <span className="flex items-center">
+                    <span className="d-flex align-items-center">
                       <svg
                         xmlns="http://www.w3.org/2000/svg"
                         fill="none"
                         viewBox="0 0 24 24"
                         stroke="currentColor"
-                        className="h-5 w-5 mr-1"
+                        className="me-1"
+                        style={{ width: "20px", height: "20px" }}
                       >
                         <path
                           strokeLinecap="round"
@@ -555,7 +547,7 @@ const VideoPlayerDemoPage: React.FC = () => {
       </main>
 
       {/* 页脚 */}
-      <Footer/>
+      <Footer />
     </div>
   );
 };

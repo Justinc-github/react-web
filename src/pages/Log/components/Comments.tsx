@@ -465,37 +465,37 @@ export default function Comments() {
 
           {/* 三点菜单按钮 */}
           {currentUserId === comment.user_id && (
-          <div className="position-relative">
-            <Button
-              variant="link"
-              className="p-0 text-muted"
-              onClick={() => toggleOptions(comment.id)}
-            >
-              <FaEllipsisV style={{ fontSize: "1.2rem" }} />
-            </Button>
-
-            {/* 删除选项菜单 */}
-            {showOptions[comment.id] && (
-              <div
-                className="position-absolute bg-white shadow-sm rounded border"
-                style={{
-                  right: 0,
-                  top: "100%",
-                  zIndex: 100,
-                  width: "100px",
-                }}
+            <div className="position-relative">
+              <Button
+                variant="link"
+                className="p-0 text-muted"
+                onClick={() => toggleOptions(comment.id)}
               >
-                <Button
-                  variant="outline-danger"
-                  className="w-100 rounded-0 text-start"
-                  onClick={() => handleDelete(comment.id)}
-                  style={{ fontSize: isMobile ? "0.85rem" : "0.9rem" }}
+                <FaEllipsisV style={{ fontSize: "1.2rem" }} />
+              </Button>
+
+              {/* 删除选项菜单 */}
+              {showOptions[comment.id] && (
+                <div
+                  className="position-absolute bg-white shadow-sm rounded border"
+                  style={{
+                    right: 0,
+                    top: "100%",
+                    zIndex: 100,
+                    width: "100px",
+                  }}
                 >
-                  删除
-                </Button>
-              </div>
-            )}
-          </div>
+                  <Button
+                    variant="outline-danger"
+                    className="w-100 rounded-0 text-start"
+                    onClick={() => handleDelete(comment.id)}
+                    style={{ fontSize: isMobile ? "0.85rem" : "0.9rem" }}
+                  >
+                    删除
+                  </Button>
+                </div>
+              )}
+            </div>
           )}
         </div>
 
@@ -505,6 +505,7 @@ export default function Comments() {
           style={{
             fontSize: isMobile ? "0.92rem" : "0.95rem",
             lineHeight: 1.4,
+            textAlign: "left", // 确保左对齐
           }}
         >
           {comment.content}

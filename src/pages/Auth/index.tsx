@@ -212,6 +212,7 @@ export default function Login() {
                     required
                     className="shadow-sm"
                     isInvalid={!!error && !password}
+                    autoComplete="off"
                   />
                   <Form.Control.Feedback type="invalid">
                     请输入密码

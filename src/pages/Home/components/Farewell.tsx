@@ -76,6 +76,7 @@ const FarewellModule: React.FC = () => {
                         width: "100px",
                         height: "100px",
                         objectFit: "cover",
+                        aspectRatio: "1/1", // 解决头像比例
                       }}
                     />
                     <div className="text-center text-md-start">

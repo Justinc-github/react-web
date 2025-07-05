@@ -21,7 +21,7 @@ export default function Log() {
       try {
         setLoading(true);
         const response = await fetch(
-          "https://api.zhongzhi.site/static/jsons/log_web.json"
+          "https://cdn.jsdelivr.net/gh/Justinc-github/project_resources@main/jsons/log_web.json"
         );
         if (!response.ok) {
           throw new Error("Network response was not ok");

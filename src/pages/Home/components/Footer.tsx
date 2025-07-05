@@ -2,7 +2,7 @@ import styles from "../css/Footer.module.css";
 
 export default function Footer() {
   const footSvg =
-    "https://cdn.jsdelivr.net/gh/Justinc-github/project_resources@main/网页/图标/";
+    "https://cdn.jsdelivr.net/gh/Justinc-github/project_resources@main/web/web_foot/svgs/";
   return (
     <footer className={styles.footer}>
       <div className={styles["footer-container"]}>
@@ -16,7 +16,7 @@ export default function Footer() {
             <a href="https://www.pgyer.com/zhong_zhi" target="_blank">
               <img
                 style={{ height: "50px", width: "50px" }}
-                src="favicon.svg"
+                src={footSvg + 'sign.svg'}
                 alt="android"
               />
             </a>

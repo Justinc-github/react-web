@@ -13,32 +13,25 @@ h4{
     text-align: left;
     font-weight:400; 
     margin:0px 5%;
-
-
-        }
+}
 img{
     max-width:50%;
     height:auto;
     margin: 5% 0px 0px 0px;
- 
 }
-
  p{
     text-align: right;
     font-size: small;
     font-style:italic;
     font-weight:light;
     letter-spacing: 1px;
-    margin:0px;
-            
-            
+    margin:0px;         
 }
 .title{
     color:rgb(58, 121, 237);
     margin:auto;
     display:inline-block;    
  } 
- 
 .explain{
     text-align: center;
     font-size: small;
@@ -65,8 +58,6 @@ img{
  .text{
     text-align: center;
     margin:0px 5%;
-
-     
  }        
 
 .divider{
@@ -84,8 +75,6 @@ img{
     100% { 
         background-position: 100% 50%; 
     }
-
-
 }
 .divider1 {
   position: relative;

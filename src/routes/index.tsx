@@ -2,7 +2,7 @@ import Home from "../pages/Home";
 import Log from "../pages/Log";
 
 import FullScreenLayout from "../pages/Log/components/FullscreenLayout";
-import helpRoutes from "../pages/help/HelpRoutes"; // 路径根据你的实际项目结构调整
+import helpRoutes from "../pages/help/HelpRoutes";
 
 import Music from "../pages/Music";
 import RequireAuth from "../pages/Auth/components/requireAuth";

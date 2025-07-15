@@ -402,7 +402,7 @@ const VideoPlayerDemoPage: React.FC = () => {
       {
         id: 1,
         title: "学长送别视频",
-        src: "https://lz.qaiu.top/parser?url=https://cloud.189.cn/web/share?code=2IJVJn2IrMjq（访问码：2c4w）",
+        src: "http://47.95.171.19:5244/d/123pan/%E8%A7%86%E9%A2%91/21%E7%BA%A7%E5%AD%A6%E9%95%BF%E9%80%81%E5%88%AB%E8%A7%86%E9%A2%91.mp4?sign=XZOq-S7sANshLL3x6zVREeXG8f2qc5B33C-fkNwLDwk=:0",
         poster:
           "https://cdn.jsdelivr.net/gh/Justinc-github/project_resources@main/网页/图片/视频/送21届学长.jpg",
         duration: "6:03",

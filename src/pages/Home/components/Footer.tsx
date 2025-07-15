@@ -16,14 +16,14 @@ export default function Footer() {
             <a href="https://www.pgyer.com/zhong_zhi" target="_blank">
               <img
                 style={{ height: "50px", width: "50px" }}
-                src={footSvg + 'sign.svg'}
+                src={footSvg + "sign.svg"}
                 alt="android"
               />
             </a>
             <a href="/download" target="_blank">
               <img
                 style={{ height: "30px", width: "30px" }}
-                src="https://image.baidu.com/search/down?url=https://lz.sinaimg.cn/large/008txcFbgy1i2w7fqf61xj303k03kq2t.jpg"
+                src={footSvg + "windows.svg"}
                 alt="windows"
               />
             </a>

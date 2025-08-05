@@ -1,7 +1,7 @@
 import React, { useState, useCallback, useEffect, useRef } from "react";
-import TopNavbar from "../TopNavBar";
-import Footer from "../../pages/Home/components/Footer";
+// import TopNavbar from "../TopNavBar";
 import styles from "./VideoPlayer.module.css"; // 引入模块化CSS
+// import Footer from "../Footer";
 
 // 视频播放器组件
 interface VideoPlayerProps {
@@ -402,7 +402,7 @@ const VideoPlayerDemoPage: React.FC = () => {
       {
         id: 1,
         title: "学长送别视频",
-        src: "http://47.95.171.19:5244/d/123pan/%E8%A7%86%E9%A2%91/21%E7%BA%A7%E5%AD%A6%E9%95%BF%E9%80%81%E5%88%AB%E8%A7%86%E9%A2%91.mp4?sign=XZOq-S7sANshLL3x6zVREeXG8f2qc5B33C-fkNwLDwk=:0",
+        src: "https://lz.qaiu.top/parser?url=https://cloud.189.cn/web/share?code=2IJVJn2IrMjq（访问码：2c4w）",
         poster:
           "https://cdn.jsdelivr.net/gh/Justinc-github/project_resources@main/网页/图片/视频/送21届学长.jpg",
         duration: "6:03",
@@ -418,7 +418,7 @@ const VideoPlayerDemoPage: React.FC = () => {
   return (
     <div className={styles.pageContainer}>
       {/* 导航栏 */}
-      <TopNavbar />
+      {/* <TopNavbar /> */}
       {/* 主内容区 */}
       <main className="container py-5">
         <div className="text-center mb-5">
@@ -547,7 +547,7 @@ const VideoPlayerDemoPage: React.FC = () => {
       </main>
 
       {/* 页脚 */}
-      <Footer />
+      {/* <Footer /> */}
     </div>
   );
 };

@@ -1,154 +1,210 @@
+import axios from "axios";
 import { useState } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
-import { supabase } from "./utils/supabaseClient";
-import {
-  Container,
-  Row,
-  Col,
-  Card,
-  Form,
-  Button,
-  Alert,
-  Spinner,
-} from "react-bootstrap";
-import "bootstrap/dist/css/bootstrap.min.css";
+import { Tabs, Tab } from "react-bootstrap";
+import LoginForm from "./components/LoginForm";
+import RetrieveForm from "./components/RetrieveForm";
+import RegisterForm from "./components/RegisterForm";
+import { saveAuthInfo } from "./utils/auth";
 
-// 定义用户类型
-export interface UserProfile {
-  id: string;
-  email: string;
-  username: string;
-  name: string;
-  avatar_url: string;
-  created_at: string;
-  updated_at: string;
-}
+const LOGIN_URL = "https://api.zhongzhi.site/auth/login";
+const REGISTER_URL = "https://api.zhongzhi.site/auth/register";
+const RETRIEVE_URL = "https://api.zhongzhi.site/auth/retrieve";
+const CODE_URL = "https://api.zhongzhi.site/auth/code";
 
-export default function Login() {
-  const [loginInput, setLoginInput] = useState("");
-  const [password, setPassword] = useState("");
+export default function LoginRegister() {
+  const [tab, setTab] = useState("login");
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [loginMode, setLoginMode] = useState<"email" | "username" | "unknown">(
-    "unknown"
-  );
-  const navigate = useNavigate();
-  const location = useLocation();
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
+  const [codeMsg, setCodeMsg] = useState("");
+  const [codeLoading, setCodeLoading] = useState(false);
 
-  interface LocationState {
-    from?: {
-      pathname?: string;
-    };
-  }
+  // 登录表单
+  const [loginData, setLoginData] = useState({
+    username: localStorage.getItem("rememberedUsername") || "",
+    password: localStorage.getItem("rememberedPassword") || "",
+    remember: !!localStorage.getItem("rememberedUsername"),
+  });
 
-  const state = location.state as LocationState;
-  const from = state?.from?.pathname || "/";
+  // 注册表单
+  const [registerData, setRegisterData] = useState({
+    email: "",
+    username: "",
+    password: "",
+    confirmPassword: "",
+    code: "",
+  });
 
-  // 邮箱格式验证正则表达式
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  // 找回密码表单
+  const [retrieveData, setRetrieveData] = useState({
+    username: "",
+    newPassword: "",
+  });
 
-  // 自动检测登录模式
-  const detectLoginMode = (input: string) => {
-    if (emailRegex.test(input.trim())) {
-      return "email";
-    } else if (input.trim().length > 0) {
-      return "username";
+  // 输入处理函数
+  const handleLoginInput = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value, checked, type } = e.target;
+    setLoginData((prev) => ({
+      ...prev,
+      [name]: type === "checkbox" ? checked : value,
+    }));
+  };
+
+  const handleRegisterInput = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setRegisterData((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleRetrieveInput = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setRetrieveData((prev) => ({ ...prev, [name]: value }));
+  };
+
+  // 获取验证码
+  const handleSendCode = async () => {
+    setCodeMsg("获取验证码");
+    if (!registerData.email) {
+      setCodeMsg("请输入邮箱");
+      return;
     }
-    return "unknown";
-  };
-
-  // 输入变化时自动检测登录模式
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value;
-    setLoginInput(value);
-    setLoginMode(detectLoginMode(value));
-    setError(null);
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
-    setError(null);
-
+    setCodeLoading(true);
     try {
-      let loginEmail = loginInput.trim();
-      let userId = "";
-      let errorMessage = "";
+      console.log(registerData.code);
+      await axios.post(
+        `${CODE_URL}?email=${encodeURIComponent(registerData.email)}`, // 拼接查询参数
+        { headers: { "Content-Type": "application/json" } }
+      );
+      setCodeMsg("验证码已发送，请查收邮箱");
+    } catch (err: unknown) {
+      if (axios.isAxiosError(err)) {
+        setCodeMsg(err.response?.data?.message || "验证码发送失败");
+        console.log("后端返回:", err.response?.data);
+      } else {
+        setCodeMsg("验证码发送失败");
+        console.log("未知错误:", err);
+      }
+    } finally {
+      setCodeLoading(false);
+    }
+  };
 
-      // 根据检测到的模式进行相应处理
-      if (loginMode === "email") {
-        // 直接使用邮箱登录
-      } else if (loginMode === "username") {
-        // 查询用户名对应的邮箱
-        const { data, error: queryError } = await supabase
-          .from("users")
-          .select("email, id")
-          .eq("username", loginEmail)
-          .single();
+  // 登录提交
+  const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setError("");
+    setSuccess("");
+    setLoading(true);
+    try {
+      const res = await axios.post(
+        LOGIN_URL,
+        {
+          identifier: loginData.username,
+          password: loginData.password,
+        },
+        { headers: { "Content-Type": "application/json" } }
+      );
 
-        if (queryError) {
-          errorMessage = "用户名不存在";
-          throw new Error(errorMessage);
+      if (res.data.message === "failure") {
+        setError("登录失败，用户名或密码错误");
+      } else {
+        // 存储后端返回的完整信息（包含message、token、email）
+        saveAuthInfo(res.data);
+
+        // 处理"记住我"逻辑（存储用户名密码）
+        if (loginData.remember) {
+          localStorage.setItem("rememberedUsername", loginData.username);
+          localStorage.setItem("rememberedPassword", loginData.password);
+        } else {
+          localStorage.removeItem("rememberedUsername");
+          localStorage.removeItem("rememberedPassword");
         }
 
-        loginEmail = data.email as string;
-        userId = data.id as string;
+        setSuccess("登录成功");
+        window.location.href = "/"; // 跳转首页
+      }
+    } catch (err: unknown) {
+      // 错误处理逻辑不变
+      if (axios.isAxiosError(err)) {
+        const errorMessage = err.response?.data?.message;
+        setError(
+          errorMessage === "failure"
+            ? "登录失败，用户名或密码错误"
+            : errorMessage || "登录失败"
+        );
+        console.log("后端返回:", err.response?.data);
       } else {
-        errorMessage = "请输入有效的邮箱或用户名";
-        throw new Error(errorMessage);
+        setError("登录失败");
+        console.log("未知错误:", err);
       }
+    } finally {
+      setLoading(false);
+    }
+  };
 
-      // 使用邮箱进行登录
-      const { error: authError } =
-        await supabase.auth.signInWithPassword({
-          email: loginEmail,
-          password,
-        });
-
-      if (authError) {
-        errorMessage = authError.message;
-        throw new Error(errorMessage);
-      }
-
-      // 如果通过用户名登录，我们已经获取了用户ID
-      // 如果通过邮箱登录，我们需要查询用户ID
-      if (loginMode === "email") {
-        const { data: userData, error: userError } = await supabase
-          .from("users")
-          .select("id")
-          .eq("email", loginEmail)
-          .single();
-
-        if (userError) {
-          errorMessage = "无法获取用户信息";
-          throw new Error(errorMessage);
-        }
-
-        userId = userData.id;
-      }
-
-      // 获取完整的用户信息
-      const { data: profileData, error: profileError } = await supabase
-        .from("users")
-        .select("*")
-        .eq("id", userId)
-        .single();
-
-      if (profileError) {
-        errorMessage = "无法获取用户信息";
-        throw new Error(errorMessage);
-      }
-
-      // 将用户信息存储在本地存储中
-      localStorage.setItem("userProfile", JSON.stringify(profileData));
-
-      navigate(from, { replace: true });
-    } catch (error) {
-      if (typeof error === "object" && error !== null) {
-        const err = error as { message?: string };
-        setError(err.message || "登录失败，请重试");
+  // 注册提交
+  const handleRegister = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setError("");
+    setSuccess("");
+    if (registerData.password !== registerData.confirmPassword) {
+      setError("两次输入的密码不一致");
+      return;
+    }
+    if (!registerData.email) {
+      setError("请输入邮箱");
+      return;
+    }
+    if (!registerData.code) {
+      setError("请输入验证码");
+      return;
+    }
+    setLoading(true);
+    try {
+      await axios.post(
+        REGISTER_URL,
+        {
+          email: registerData.email,
+          username: registerData.username,
+          password: registerData.password,
+          code: registerData.code,
+        },
+        { headers: { "Content-Type": "application/json" } }
+      );
+      setSuccess("注册成功，请登录");
+      setTab("login");
+    } catch (err: unknown) {
+      if (axios.isAxiosError(err)) {
+        setError(err.response?.data?.message || "注册失败");
       } else {
-        setError("登录失败，请重试");
+        setError("注册失败");
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // 找回密码提交
+  const handleRetrieve = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setError("");
+    setSuccess("");
+    setLoading(true);
+    try {
+      await axios.post(
+        RETRIEVE_URL,
+        {
+          username: retrieveData.username,
+          newPassword: retrieveData.newPassword,
+        },
+        { headers: { "Content-Type": "application/json" } }
+      );
+      setSuccess("密码重置成功，请登录");
+      setTab("login");
+    } catch (err: unknown) {
+      if (axios.isAxiosError(err)) {
+        setError(err.response?.data?.message || "找回密码失败");
+      } else {
+        setError("找回密码失败");
       }
     } finally {
       setLoading(false);
@@ -156,102 +212,61 @@ export default function Login() {
   };
 
   return (
-    <Container
-      fluid
-      className="min-vh-100 d-flex align-items-center justify-content-center bg-light"
+    <div
+      style={{
+        maxWidth: 400,
+        margin: "40px auto",
+        background: "#fff",
+        padding: 24,
+        borderRadius: 8,
+        boxShadow: "0 2px 8px #eee",
+      }}
     >
-      <Row className="w-100">
-        <Col md={6} lg={4} xl={3} className="mx-auto">
-          <Card className="shadow-lg rounded-lg border-0">
-            <Card.Header className="bg-white border-bottom-0">
-              <Card.Title
-                as="h3"
-                className="text-center font-weight-bold text-primary"
-              >
-                账户登录
-              </Card.Title>
-              <p className="text-center text-muted">
-                系统会自动识别邮箱或用户名
-              </p>
-            </Card.Header>
-            <Card.Body className="p-5">
-              <Form onSubmit={handleSubmit}>
-                <Form.Group controlId="loginInput" className="mb-4">
-                  <Form.Label>邮箱或用户名</Form.Label>
-                  <Form.Control
-                    type="text"
-                    placeholder="输入邮箱或用户名"
-                    value={loginInput}
-                    onChange={handleInputChange}
-                    required
-                    className="shadow-sm"
-                    isInvalid={!!error}
-                  />
-                  {loginMode === "email" && (
-                    <Form.Text className="text-success">
-                      <i className="bi bi-envelope-fill mr-1"></i>已识别为邮箱
-                    </Form.Text>
-                  )}
-                  {loginMode === "username" && (
-                    <Form.Text className="text-primary">
-                      <i className="bi bi-person-fill mr-1"></i>已识别为用户名
-                    </Form.Text>
-                  )}
-                  <Form.Control.Feedback type="invalid">
-                    {error || "请输入有效的邮箱或用户名"}
-                  </Form.Control.Feedback>
-                </Form.Group>
-
-                <Form.Group controlId="password" className="mb-4">
-                  <Form.Label>登录密码</Form.Label>
-                  <Form.Control
-                    type="password"
-                    placeholder="••••••••"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    required
-                    className="shadow-sm"
-                    isInvalid={!!error && !password}
-                    autoComplete="off"
-                  />
-                  <Form.Control.Feedback type="invalid">
-                    请输入密码
-                  </Form.Control.Feedback>
-                </Form.Group>
-
-                {error && (
-                  <Alert variant="danger" className="mb-4">
-                    <div className="d-flex align-items-center">
-                      <i className="bi bi-exclamation-circle-fill mr-2"></i>
-                      <span>{error}</span>
-                    </div>
-                  </Alert>
-                )}
-
-                <Button
-                  variant="primary"
-                  type="submit"
-                  disabled={loading}
-                  className="w-100 py-2 font-weight-bold shadow-sm"
-                  style={{ backgroundColor: "#165DFF", borderColor: "#165DFF" }}
-                >
-                  {loading ? (
-                    <Spinner
-                      as="span"
-                      animation="border"
-                      size="sm"
-                      role="status"
-                      aria-hidden="true"
-                      className="mr-2"
-                    />
-                  ) : null}
-                  {loading ? "登录中..." : "登录账户"}
-                </Button>
-              </Form>
-            </Card.Body>
-          </Card>
-        </Col>
-      </Row>
-    </Container>
+      <Tabs
+        activeKey={tab}
+        onSelect={(k) => {
+          setTab(k || "login");
+          setError("");
+          setSuccess("");
+        }}
+        className="mb-3"
+      >
+        <Tab eventKey="login" title="登录">
+          <LoginForm
+            loginData={loginData}
+            handleInput={handleLoginInput}
+            handleSubmit={handleLogin}
+            setTab={setTab}
+            loading={loading}
+            error={error}
+            success={success}
+          />
+        </Tab>
+        <Tab eventKey="register" title="注册">
+          <RegisterForm
+            registerData={registerData}
+            handleInput={handleRegisterInput}
+            handleSubmit={handleRegister}
+            handleSendCode={handleSendCode}
+            codeLoading={codeLoading}
+            codeMsg={codeMsg}
+            loading={loading}
+            error={error}
+            success={success}
+          />
+        </Tab>
+        <Tab eventKey="retrieve" title="找回密码">
+          <RetrieveForm
+            retrieveData={retrieveData}
+            handleInput={handleRetrieveInput}
+            handleSubmit={handleRetrieve}
+            setTab={setTab}
+            loading={loading}
+            error={error}
+            success={success}
+          />
+        </Tab>
+      </Tabs>
+    </div>
   );
 }

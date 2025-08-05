@@ -1,8 +1,6 @@
 import { useState, useEffect } from "react";
 import { Card, Col, Container, Row } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
-import TopNavBar from "../../components/TopNavBar";
-import Footer from "../Home/components/Footer";
 
 export default function Log() {
   const navigate = useNavigate();
@@ -61,7 +59,6 @@ export default function Log() {
   if (loading) {
     return (
       <div className="log">
-        <TopNavBar />
         <Container className="my-4 text-center">
           <p>加载中...</p>
         </Container>
@@ -72,7 +69,6 @@ export default function Log() {
   if (error) {
     return (
       <div className="log">
-        <TopNavBar />
         <Container className="my-4 text-center">
           <p>数据加载失败，请稍后重试</p>
         </Container>
@@ -82,7 +78,6 @@ export default function Log() {
 
   return (
     <div className="log">
-      <TopNavBar />
       <Container className="my-4">
         <Row className="justify-content-center">
           <Col md={8}>
@@ -90,57 +85,41 @@ export default function Log() {
               {cardsData.map((card) => (
                 <Card
                   key={card.id}
-                  className="shadow-sm p-0 rounded-3"
+                  className="shadow-sm p-0 rounded-3 overflow-hidden"
                   style={{
                     cursor: "pointer",
-                    overflow: "hidden",
-                    // 控制卡片尺寸
                     aspectRatio: "20/7",
+                    position: "relative",
                   }}
                   onClick={() => handleCardClick(card)}
                 >
-                  {/* 图片容器 - 保持宽高比 */}
-                  <div
+                  {/* 保证图片填充整个卡片区域 */}
+                  <Card.Img
+                    variant="top"
+                    src={card.image}
                     style={{
-                      position: "relative",
                       width: "100%",
-                      paddingTop: "35%", // 16:9 = 56.25%, 4:3 = 75%
-                      overflow: "hidden",
+                      height: "100%",
+                      objectFit: "cover", // 保持比例裁切填满
+                      transition: "transform 0.3s ease",
+                      backgroundColor: "#f8f9fa",
                     }}
-                  >
-                    <Card.Img
-                      variant="top"
-                      src={card.image}
-                      style={{
-                        position: "absolute",
-                        top: 0,
-                        left: 0,
-                        width: "100%",
-                        height: "100%",
-                        // 保持比例同时裁剪多余部分
-                        objectFit: "cover",
-                        // 平滑的悬停效果
-                        transition: "transform 0.3s ease",
-                      }}
-                      onMouseEnter={(e) =>
-                        (e.currentTarget.style.transform = "scale(1.03)")
-                      }
-                      onMouseLeave={(e) =>
-                        (e.currentTarget.style.transform = "scale(1)")
-                      }
-                      // 添加加载占位背景
-                      onLoad={(e) =>
-                        (e.currentTarget.style.backgroundColor = "transparent")
-                      }
-                    />
-                  </div>
+                    onMouseEnter={(e) =>
+                      (e.currentTarget.style.transform = "scale(1.03)")
+                    }
+                    onMouseLeave={(e) =>
+                      (e.currentTarget.style.transform = "scale(1)")
+                    }
+                    onLoad={(e) => {
+                      e.currentTarget.style.backgroundColor = "transparent";
+                    }}
+                  />
                 </Card>
               ))}
             </div>
           </Col>
         </Row>
       </Container>
-      <Footer/>
     </div>
   );
 }

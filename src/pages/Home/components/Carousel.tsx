@@ -32,13 +32,7 @@ export default function CarouselComponent() {
       src: "https://e3f49eaa46b57.cdn.sohucs.com/2025/6/29/14/55/MTAwMTIyXzE3NTExODAxMTM1NDk=.jpg",
       alt: "送学长照片",
       caption: "",
-    },
-    {
-      id: 4,
-      src: "https://assets-hs-cdn.soutushenqi.com/ai_images/da113cea-fb73-48a3-9afa-685246e088ac.png",
-      alt: "过生日",
-      caption: "",
-    },
+    }
   ];
 
   const handleImageClick = (imgUrl: string) => {

@@ -5,7 +5,6 @@ import FullScreenLayout from "../pages/Log/components/FullscreenLayout";
 import helpRoutes from "../pages/help/HelpRoutes";
 
 import Music from "../pages/Music";
-import RequireAuth from "../pages/Auth/components/requireAuth";
 import Login from "../pages/Auth";
 import Page2024_10_03 from "../pages/Log/pages/Page2024_10_03";
 import Page2025_01_01 from "../pages/Log/pages/Page2025_01_01";
@@ -14,11 +13,18 @@ import Page2025_05_28 from "../pages/Log/pages/Page2025_05_28";
 import Unauthorized from "../components/Unauthorized";
 import VideoPlayer from "../components/VideoPlayer";
 import Download from "../pages/WindowsDownload";
+import AuthRoute from "../pages/Auth/utils/AuthRoute";
+import StudentForm from "../pages/Entroll";
+
 
 export default [
   {
     path: "/",
-    element: <Home />,
+    element: (
+      <AuthRoute>
+        <Home />
+      </AuthRoute>
+    ),
   },
   helpRoutes,
   {
@@ -28,37 +34,49 @@ export default [
   {
     path: "/log",
     element: (
-      <RequireAuth>
+      <AuthRoute>
         <Log />
-      </RequireAuth>
+      </AuthRoute>
     ),
   },
   {
     path: "/download",
-    element: <Download />,
+    element: (
+      <AuthRoute>
+        <Download />
+      </AuthRoute>
+    ),
   },
   {
     path: "/music",
     element: (
-      <RequireAuth>
+      <AuthRoute>
         <Music />
-      </RequireAuth>
+      </AuthRoute>
     ),
   },
   {
     path: "/video",
     element: (
-      <RequireAuth>
+      <AuthRoute>
         <VideoPlayer />
-      </RequireAuth>
+      </AuthRoute>
+    ),
+  },
+  {
+    path: "/enroll",
+    element: (
+      <AuthRoute>
+        <StudentForm />
+      </AuthRoute>
     ),
   },
   {
     path: "/log/pages",
     element: (
-      <RequireAuth>
+      <AuthRoute>
         <FullScreenLayout />
-      </RequireAuth>
+      </AuthRoute>
     ),
     children: [
       {

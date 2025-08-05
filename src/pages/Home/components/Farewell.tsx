@@ -1,7 +1,7 @@
 import React from "react";
-import { Card, Row, Col, Container, Image, Button } from "react-bootstrap";
+import { Card, Row, Col, Container, Image } from "react-bootstrap";
 import { FaGraduationCap, FaBriefcase } from "react-icons/fa";
-import { Link } from "react-router-dom";
+// import { Link } from "react-router-dom";
 
 interface Senior {
   id: number;
@@ -50,11 +50,11 @@ const FarewellModule: React.FC = () => {
           <h2 className="h2 fw-bold mb-3 text-dark">
             <FaGraduationCap className="me-2" />
             25届毕业生{" "}
-            <Link to="/video">
+            {/* <Link to="/video">
               <Button variant="primary" className="ms-2">
                 一睹风采?
               </Button>
-            </Link>
+            </Link> */}
           </h2>
           <p className="text-muted mx-auto" style={{ maxWidth: "720px" }}>
             毕业不是终点，而是新征程的起点。让我们一起祝福学长学姐们在未来的道路上一帆风顺！

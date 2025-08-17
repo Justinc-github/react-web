@@ -15,7 +15,7 @@ import VideoPlayer from "../components/VideoPlayer";
 import Download from "../pages/WindowsDownload";
 import AuthRoute from "../pages/Auth/utils/AuthRoute";
 import StudentForm from "../pages/Entroll";
-
+import TeamMembersSection from "../pages/Home/components/TeamProjects/components/TeamMembersSection";
 
 export default [
   {
@@ -25,6 +25,10 @@ export default [
         <Home />
       </AuthRoute>
     ),
+  },
+  {
+    path: "/home/introduce/:id",
+    element: <TeamMembersSection />,
   },
   helpRoutes,
   {

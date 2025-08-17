@@ -8,8 +8,9 @@ import { saveAuthInfo } from "./utils/auth";
 
 const LOGIN_URL = "https://api.zhongzhi.site/auth/login";
 const REGISTER_URL = "https://api.zhongzhi.site/auth/register";
-const RETRIEVE_URL = "https://api.zhongzhi.site/auth/retrieve";
 const CODE_URL = "https://api.zhongzhi.site/auth/code";
+const CHANGE_PASSWORD_URL = "https://api.zhongzhi.site/auth/change_password";
+const CODE_CHANGE_URL = "https://api.zhongzhi.site/auth/change/code";
 
 export default function LoginRegister() {
   const [tab, setTab] = useState("login");
@@ -37,7 +38,8 @@ export default function LoginRegister() {
 
   // 找回密码表单
   const [retrieveData, setRetrieveData] = useState({
-    username: "",
+    email: "",
+    code: "",
     newPassword: "",
   });
 
@@ -60,6 +62,53 @@ export default function LoginRegister() {
     setRetrieveData((prev) => ({ ...prev, [name]: value }));
   };
 
+  // 处理找回密码的验证码发送
+  const handleSendRetrieveCode = async () => {
+    setCodeMsg("获取验证码");
+    if (!retrieveData.email) {
+      setCodeMsg("请输入邮箱");
+      return;
+    }
+    setCodeLoading(true);
+    try {
+      // 发送找回密码的验证码请求
+      await axios.post(
+        `${CODE_CHANGE_URL}?email=${encodeURIComponent(retrieveData.email)}`,
+        { headers: { "Content-Type": "application/json" } }
+      );
+      setCodeMsg("验证码已发送，请查收邮箱");
+    } catch {
+      // 错误处理...
+    } finally {
+      setCodeLoading(false);
+    }
+  };
+  // 修改密码提交函数
+  const handleChangePassword = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setError("");
+    setSuccess("");
+    setLoading(true);
+
+    try {
+      // 使用正确的密码修改接口
+      await axios.put(
+        CHANGE_PASSWORD_URL,
+        {
+          email: retrieveData.email,
+          code: retrieveData.code,
+          new_password: retrieveData.newPassword,
+        },
+        { headers: { "Content-Type": "application/json" } }
+      );
+      setSuccess("密码重置成功，请登录");
+      setTab("login");
+    } catch {
+      // 错误处理...
+    } finally {
+      setLoading(false);
+    }
+  };
   // 获取验证码
   const handleSendCode = async () => {
     setCodeMsg("获取验证码");
@@ -183,34 +232,6 @@ export default function LoginRegister() {
     }
   };
 
-  // 找回密码提交
-  const handleRetrieve = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    setError("");
-    setSuccess("");
-    setLoading(true);
-    try {
-      await axios.post(
-        RETRIEVE_URL,
-        {
-          username: retrieveData.username,
-          newPassword: retrieveData.newPassword,
-        },
-        { headers: { "Content-Type": "application/json" } }
-      );
-      setSuccess("密码重置成功，请登录");
-      setTab("login");
-    } catch (err: unknown) {
-      if (axios.isAxiosError(err)) {
-        setError(err.response?.data?.message || "找回密码失败");
-      } else {
-        setError("找回密码失败");
-      }
-    } finally {
-      setLoading(false);
-    }
-  };
-
   return (
     <div
       style={{
@@ -259,9 +280,12 @@ export default function LoginRegister() {
           <RetrieveForm
             retrieveData={retrieveData}
             handleInput={handleRetrieveInput}
-            handleSubmit={handleRetrieve}
+            handleSubmit={handleChangePassword} // 使用新的提交函数
+            handleSendCode={handleSendRetrieveCode} // 添加验证码发送功能
             setTab={setTab}
             loading={loading}
+            codeLoading={codeLoading}
+            codeMsg={codeMsg}
             error={error}
             success={success}
           />

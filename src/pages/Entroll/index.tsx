@@ -13,12 +13,13 @@ import {
   ProgressBar,
 } from "react-bootstrap";
 import {
-  FaCalculator,
+  // FaCalculator,
   FaCheck,
   FaArrowLeft,
   FaArrowRight,
 } from "react-icons/fa";
 import "bootstrap/dist/css/bootstrap.min.css";
+import { getAuthInfo } from "../Auth/utils/auth";
 
 const StudentForm: React.FC = () => {
   // 表单状态管理
@@ -40,7 +41,7 @@ const StudentForm: React.FC = () => {
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState("");
   const [step, setStep] = useState(1); // 1: 个人信息, 2: 成绩信息
-
+  const ENROLL_CODE = "https://api.zhongzhi.site/enroll/code";
   // 处理输入变化
   const handleChange = (
     e: React.ChangeEvent<
@@ -61,12 +62,12 @@ const StudentForm: React.FC = () => {
     }));
   };
 
-  // 计算总分
-  const calculateTotal = () => {
-    const { Chinese, math, English, xiaoKe } = formData;
-    const total = Chinese + math + English + xiaoKe;
-    setFormData((prev) => ({ ...prev, grade: total }));
-  };
+  // // 计算总分
+  // const calculateTotal = () => {
+  //   const { Chinese, math, English, xiaoKe } = formData;
+  //   const total = Chinese + math + English + xiaoKe;
+  //   setFormData((prev) => ({ ...prev, grade: total }));
+  // };
 
   // 验证个人信息是否完整
   const validatePersonalInfo = () => {
@@ -112,7 +113,7 @@ const StudentForm: React.FC = () => {
     const scores = [
       { name: "语文", value: formData.Chinese, max: 150 },
       { name: "数学", value: formData.math, max: 150 },
-      { name: "英语", value: formData.English, max: 300 },
+      { name: "英语", value: formData.English, max: 150 },
       { name: "小科", value: formData.xiaoKe, max: 300 },
     ];
 
@@ -123,12 +124,12 @@ const StudentForm: React.FC = () => {
       }
     }
 
-    // 验证总分
-    const calculatedTotal =
-      formData.Chinese + formData.math + formData.English + formData.xiaoKe;
-    if (Math.abs(calculatedTotal - formData.grade) > 0.01) {
-      calculateTotal();
-    }
+    // // 验证总分
+    // const calculatedTotal =
+    //   formData.Chinese + formData.math + formData.English + formData.xiaoKe;
+    // if (Math.abs(calculatedTotal - formData.grade) > 0.01) {
+    //   calculateTotal();
+    // }
 
     return true;
   };
@@ -160,12 +161,28 @@ const StudentForm: React.FC = () => {
     }
 
     try {
+      // 提交学生表单数据
       const response = await axios.post(
         "https://api.zhongzhi.site/students/",
         formData
       );
       console.log(response);
       setSuccess(true);
+
+      // 获取登录存储的邮箱
+      try {
+        const authInfo = getAuthInfo();
+        if (authInfo && authInfo.email) {
+          // 调用邮箱发送接口
+          await axios.post(`${ENROLL_CODE}?email=${encodeURIComponent(authInfo.email)}`);
+          console.log("报名成功邮件已发送");
+        } else {
+          console.warn("未找到用户邮箱信息");
+        }
+      } catch (emailError) {
+        console.error("邮件发送失败:", emailError);
+      }
+
       setFormData({
         xueHao: "",
         xingMing: "",
@@ -361,12 +378,12 @@ const StudentForm: React.FC = () => {
                     value={formData.English || ""}
                     onChange={handleChange}
                     min="0"
-                    max="300"
+                    max="150"
                     step="0.01"
                   />
                   <InputGroup.Text>分</InputGroup.Text>
                 </InputGroup>
-                <Form.Text muted>满分300分</Form.Text>
+                <Form.Text muted>满分150分</Form.Text>
               </Form.Group>
             </Col>
 
@@ -400,14 +417,13 @@ const StudentForm: React.FC = () => {
                     name="grade"
                     value={formData.grade || ""}
                     onChange={handleChange}
-                    readOnly
                   />
                   <InputGroup.Text>分</InputGroup.Text>
                 </InputGroup>
               </Form.Group>
             </Col>
 
-            <Col md={6} className="d-flex align-items-end mb-3">
+            {/* <Col md={6} className="d-flex align-items-end mb-3">
               <Button
                 variant="outline-primary"
                 onClick={calculateTotal}
@@ -417,7 +433,7 @@ const StudentForm: React.FC = () => {
                 <FaCalculator className="me-2" />
                 计算总分
               </Button>
-            </Col>
+            </Col> */}
           </Row>
         </Form>
       </Card.Body>

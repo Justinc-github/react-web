@@ -1,5 +1,6 @@
 import React from "react";
 import { Container, Row, Col, Card, Button, Badge } from "react-bootstrap";
+import { Link } from "react-router-dom";
 
 interface Project {
   id: number;
@@ -90,13 +91,16 @@ const TeamProjects: React.FC = () => {
                     <i className="fas fa-users me-2"></i>
                     <span className="fw-medium">{project.members} 成员</span>
                   </Card.Text>
-                  <Button
-                    variant="primary"
-                    className="w-100 fw-medium rounded-pill py-2"
-                    style={{ fontWeight: 500 }}
-                  >
-                    查看详情
-                  </Button>
+                  <Link to={`/home/introduce/${project.id}`}>
+                    {/* 传入当前项目的id */}
+                    <Button
+                      variant="primary"
+                      className="w-100 fw-medium rounded-pill py-2"
+                      style={{ fontWeight: 500 }}
+                    >
+                      查看详情
+                    </Button>
+                  </Link>
                 </Card.Body>
               </Card>
             </Col>

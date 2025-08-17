@@ -17,22 +17,22 @@ export default function CarouselComponent() {
   const carouselItems: CarouselItem[] = [
     {
       id: 1,
-      src: "https://e3f49eaa46b57.cdn.sohucs.com/2025/6/29/14/55/MTAwMTIyXzE3NTExODAxMjI5MTI=.jpg",
+      src: "https://cdn.jsdelivr.net/gh/Justinc-github/project_resources@main/web/home/2025-01-01合照.jpg",
       alt: "元旦活动照片",
       caption: "",
     },
     {
       id: 2,
-      src: "https://e3f49eaa46b57.cdn.sohucs.com/2025/6/29/14/55/MTAwMTIyXzE3NTExODAxMjk3NTI=.jpg",
+      src: "https://cdn.jsdelivr.net/gh/Justinc-github/project_resources@main/web/home/2025-05-03合照.jpg",
       alt: "五一活动照片",
       caption: "",
     },
     {
       id: 3,
-      src: "https://e3f49eaa46b57.cdn.sohucs.com/2025/6/29/14/55/MTAwMTIyXzE3NTExODAxMTM1NDk=.jpg",
+      src: "https://cdn.jsdelivr.net/gh/Justinc-github/project_resources@main/web/home/2025-06-14合照.jpg",
       alt: "送学长照片",
       caption: "",
-    }
+    },
   ];
 
   const handleImageClick = (imgUrl: string) => {

@@ -16,6 +16,7 @@ import Download from "../pages/WindowsDownload";
 import AuthRoute from "../pages/Auth/utils/AuthRoute";
 import StudentForm from "../pages/Entroll";
 import TeamMembersSection from "../pages/Home/components/TeamProjects/components/TeamMembersSection";
+import GraduatePrevious from "../pages/Home/components/Farewell/GraduatePrevious";
 
 export default [
   {
@@ -29,6 +30,10 @@ export default [
   {
     path: "/home/introduce/:id",
     element: <TeamMembersSection />,
+  },
+  {
+    path: "/home/previous/graduate",
+    element: <GraduatePrevious />,
   },
   helpRoutes,
   {

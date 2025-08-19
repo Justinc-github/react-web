@@ -17,11 +17,11 @@ export default function NavigationBar() {
             日志
           </Nav.Link>
         </Nav.Item>
-        <Nav.Item>
+        {/* <Nav.Item>
           <Nav.Link as={Link} to="/help/web/intro" eventKey="/help">
             帮助中心
           </Nav.Link>
-        </Nav.Item>
+        </Nav.Item> */}
         <Nav.Item className="d-flex align-items-center">
           <NavigationProfile />
         </Nav.Item>

@@ -1,6 +1,5 @@
+import React, { useState, useCallback, useRef } from "react";
 import { Modal } from "react-bootstrap";
-import { FC, useState, useEffect, useRef, useCallback } from "react";
-import { FaSpinner, FaCompress, FaExpandArrowsAlt } from "react-icons/fa";
 
 interface ImageModalProps {
   show: boolean;
@@ -8,273 +7,147 @@ interface ImageModalProps {
   imgUrl: string;
 }
 
-const ImageModal: FC<ImageModalProps> = ({ show, onHide, imgUrl }) => {
+const ImageModal: React.FC<ImageModalProps> = ({ show, onHide, imgUrl }) => {
+  // 缩放比例状态，默认为1（100%）
   const [scale, setScale] = useState(1);
-  const [translateX, setTranslateX] = useState(0);
-  const [translateY, setTranslateY] = useState(0);
+  // 图片位置偏移状态
+  const [position, setPosition] = useState({ x: 0, y: 0 });
+  // 拖动状态
   const [isDragging, setIsDragging] = useState(false);
-  const [startX, setStartX] = useState(0);
-  const [startY, setStartY] = useState(0);
-  const [startDistance, setStartDistance] = useState(0);
-  const [initialScale, setInitialScale] = useState(1);
-  const [isPinching, setIsPinching] = useState(false);
-  const [imageLoaded, setImageLoaded] = useState(false);
-  const [minScale, setMinScale] = useState(0.5);
-  const [maxScale] = useState(5);
-  const [containerWidth, setContainerWidth] = useState(0);
-  const [containerHeight, setContainerHeight] = useState(0);
-  const [imgWidth, setImgWidth] = useState(0);
-  const [imgHeight, setImgHeight] = useState(0);
-  const [isMobile, setIsMobile] = useState(false);
+  // 记录鼠标起始位置
+  const [startPos, setStartPos] = useState({ x: 0, y: 0 });
+  // 最小缩放比例限制
+  const MIN_SCALE = 0.5;
+  // 最大缩放比例限制
+  const MAX_SCALE = 3;
+  // 图片容器引用
+  const containerRef = useRef<HTMLDivElement>(null);
 
-  const imgRef = useRef<HTMLImageElement | null>(null);
-  const containerRef = useRef<HTMLDivElement | null>(null);
-
-  useEffect(() => {
-    setIsMobile(/Android|iPhone|iPad|iPod/i.test(navigator.userAgent));
-  }, []);
-
-  useEffect(() => {
-    if (!show) return;
-    const updateSize = () => {
-      if (containerRef.current) {
-        setContainerWidth(containerRef.current.clientWidth);
-        setContainerHeight(containerRef.current.clientHeight);
-      }
-    };
-    updateSize();
-    window.addEventListener("resize", updateSize);
-    return () => window.removeEventListener("resize", updateSize);
-  }, [show]);
-
-  const handleDragStart = (e: React.MouseEvent | React.TouchEvent) => {
-    let clientX: number, clientY: number;
-
-    if ("touches" in e && e.touches.length === 1) {
-      clientX = e.touches[0].clientX;
-      clientY = e.touches[0].clientY;
-    } else if ("clientX" in e.nativeEvent) {
-      if ((e.nativeEvent as MouseEvent).button !== 0) return;
-      clientX = (e.nativeEvent as MouseEvent).clientX;
-      clientY = (e.nativeEvent as MouseEvent).clientY;
-    } else {
-      return;
-    }
-
-    const rect = containerRef.current?.getBoundingClientRect();
-    if (!rect) return;
-
-    const offsetX = clientX - rect.left;
-    const offsetY = clientY - rect.top;
-
-    setStartX(offsetX - translateX);
-    setStartY(offsetY - translateY);
-    setIsDragging(true);
-  };
-
-  const handleDragMove = (e: React.MouseEvent | React.TouchEvent) => {
-    if (!isDragging) return;
-
-    let clientX: number, clientY: number;
-
-    if ("touches" in e && e.touches.length === 1) {
-      clientX = e.touches[0].clientX;
-      clientY = e.touches[0].clientY;
-    } else if ("clientX" in e.nativeEvent) {
-      clientX = (e.nativeEvent as MouseEvent).clientX;
-      clientY = (e.nativeEvent as MouseEvent).clientY;
-    } else {
-      return;
-    }
-
-    const rect = containerRef.current?.getBoundingClientRect();
-    if (!rect) return;
-
-    const offsetX = clientX - rect.left;
-    const offsetY = clientY - rect.top;
-
-    const newX = offsetX - startX;
-    const newY = offsetY - startY;
-
-    const maxX = Math.max((imgWidth * scale - containerWidth) / 2, 0);
-    const maxY = Math.max((imgHeight * scale - containerHeight) / 2, 0);
-
-    setTranslateX(Math.max(-maxX, Math.min(maxX, newX)));
-    setTranslateY(Math.max(-maxY, Math.min(maxY, newY)));
-  };
-
-  const handleTouchStart = (e: React.TouchEvent<HTMLImageElement>) => {
-    if (e.touches.length === 2) {
-      const [t1, t2] = [e.touches[0], e.touches[1]];
-      const dx = t2.clientX - t1.clientX;
-      const dy = t2.clientY - t1.clientY;
-      setStartDistance(Math.sqrt(dx * dx + dy * dy));
-      setInitialScale(scale);
-      setIsPinching(true);
-      setIsDragging(false);
-    } else if (e.touches.length === 1) {
-      handleDragStart(e);
+  // 点击模态框背景关闭
+  const handleClose = (e: React.MouseEvent) => {
+    if (e.target === e.currentTarget) {
+      resetImageState();
+      onHide();
     }
   };
 
-  const handleTouchMove = (e: React.TouchEvent<HTMLImageElement>) => {
-    if (isPinching && e.touches.length === 2) {
-      const [t1, t2] = [e.touches[0], e.touches[1]];
-      const dx = t2.clientX - t1.clientX;
-      const dy = t2.clientY - t1.clientY;
-      const newDist = Math.sqrt(dx * dx + dy * dy);
-      const newScale = Math.min(
-        Math.max(initialScale * (newDist / startDistance), minScale),
-        maxScale
-      );
-
-      const container = containerRef.current?.getBoundingClientRect();
-      if (!container) return;
-
-      const centerX = (t1.clientX + t2.clientX) / 2 - container.left;
-      const centerY = (t1.clientY + t2.clientY) / 2 - container.top;
-      const deltaScale = newScale / scale;
-
-      setTranslateX((prev) => prev + (centerX - prev) * (1 - deltaScale));
-      setTranslateY((prev) => prev + (centerY - prev) * (1 - deltaScale));
-      setScale(newScale);
-    } else if (e.touches.length === 1 && isDragging) {
-      handleDragMove(e);
-    }
-  };
-
-  const handleTouchEnd = () => {
-    setIsPinching(false);
-    setIsDragging(false);
-  };
-
+  // 处理鼠标滚轮事件来缩放图片
   const handleWheel = useCallback(
-    (e: WheelEvent) => {
-      e.preventDefault();
-      const delta = e.deltaY < 0 ? 1.1 : 0.9;
-      const newScale = Math.min(Math.max(scale * delta, minScale), maxScale);
+    (e: React.WheelEvent) => {
+      e.preventDefault(); // 阻止页面滚动
 
-      const container = containerRef.current;
-      if (!container) return;
-      const rect = container.getBoundingClientRect();
-      const offsetX = e.clientX - rect.left;
-      const offsetY = e.clientY - rect.top;
-      const deltaScale = newScale / scale;
+      // 计算新的缩放比例，每次滚动调整10%
+      const delta = e.deltaY < 0 ? 0.1 : -0.1;
+      let newScale = scale + delta;
 
-      setTranslateX((prev) => prev + (offsetX - prev) * (1 - deltaScale));
-      setTranslateY((prev) => prev + (offsetY - prev) * (1 - deltaScale));
+      // 限制缩放范围在MIN_SCALE到MAX_SCALE之间
+      newScale = Math.max(MIN_SCALE, Math.min(newScale, MAX_SCALE));
+
       setScale(newScale);
     },
-    [scale, minScale, maxScale]
+    [scale]
   );
 
-  useEffect(() => {
-    const container = containerRef.current;
-    if (!container) return;
-    container.addEventListener("wheel", handleWheel, { passive: false });
-    return () => container.removeEventListener("wheel", handleWheel);
-  }, [handleWheel]);
-
-  const handleImageLoad = () => {
-    const img = imgRef.current;
-    const container = containerRef.current;
-    if (!img || !container) return;
-
-    const imgW = img.naturalWidth;
-    const imgH = img.naturalHeight;
-    const conW = container.clientWidth;
-    const conH = container.clientHeight;
-
-    setImgWidth(imgW);
-    setImgHeight(imgH);
-
-    const fitScale = Math.min(conW / imgW, conH / imgH, 1);
-    setScale(fitScale);
-    setMinScale(Math.min(fitScale * 0.8, 0.5));
-    setTranslateX(0);
-    setTranslateY(0);
-    setImageLoaded(true);
+  // 开始拖动 - 仅响应鼠标左键
+  const handleMouseDown = (e: React.MouseEvent) => {
+    // 只有鼠标左键点击且缩放比例大于1时才允许拖动
+    if (e.button === 0 && scale > 1) {
+      setIsDragging(true);
+      setStartPos({
+        x: e.clientX - position.x,
+        y: e.clientY - position.y,
+      });
+    }
   };
 
-  useEffect(() => {
-    if (!show) {
-      setScale(1);
-      setTranslateX(0);
-      setTranslateY(0);
-      setImageLoaded(false);
+  // 处理拖动
+  const handleMouseMove = useCallback(
+    (e: React.MouseEvent) => {
+      if (!isDragging) return;
+
+      e.preventDefault();
+
+      // 计算新的位置
+      const newX = e.clientX - startPos.x;
+      const newY = e.clientY - startPos.y;
+
+      // 如果有容器引用，限制拖动范围在容器内
+      if (containerRef.current) {
+        const container = containerRef.current.getBoundingClientRect();
+        const maxX = ((scale - 1) * container.width) / 2;
+        const maxY = ((scale - 1) * container.height) / 2;
+
+        // 限制拖动边界
+        setPosition({
+          x: Math.max(-maxX, Math.min(newX, maxX)),
+          y: Math.max(-maxY, Math.min(newY, maxY)),
+        });
+      } else {
+        setPosition({ x: newX, y: newY });
+      }
+    },
+    [isDragging, startPos, scale]
+  );
+
+  // 结束拖动 - 仅响应鼠标左键释放
+  const handleMouseUp = (e: React.MouseEvent) => {
+    // 只有松开鼠标左键时才结束拖动
+    if (e.button === 0 && isDragging) {
+      setIsDragging(false);
     }
-  }, [show]);
+  };
+
+  // 双击重置缩放和位置
+  const handleDoubleClick = () => {
+    resetImageState();
+  };
+
+  // 重置图片状态
+  const resetImageState = () => {
+    setScale(1);
+    setPosition({ x: 0, y: 0 });
+    setIsDragging(false);
+  };
 
   return (
     <Modal
       show={show}
-      onHide={onHide}
+      onHide={() => {
+        resetImageState();
+        onHide();
+      }}
       centered
-      size="xl"
-      contentClassName="border-0 bg-transparent"
-      dialogClassName="border-0 bg-transparent"
-      backdropClassName="bg-black/80 backdrop-blur-sm"
+      dialogClassName="p-0 border-0"
+      contentClassName="bg-black bg-opacity-90 p-0 rounded-0"
+      dialogAs="div"
     >
-      <Modal.Body className="text-center p-0 position-relative">
-        <div
-          ref={containerRef}
-          className="relative w-full h-[90vh] overflow-hidden bg-black touch-none select-none"
-          onMouseDown={handleDragStart}
-          onMouseMove={handleDragMove}
-          onMouseUp={() => setIsDragging(false)}
-          onMouseLeave={() => setIsDragging(false)}
-          onTouchStart={handleTouchStart}
-          onTouchMove={handleTouchMove}
-          onTouchEnd={handleTouchEnd}
-        >
-          {!imageLoaded && (
-            <div className="absolute inset-0 flex items-center justify-center">
-              <FaSpinner className="text-white text-4xl animate-spin" />
-            </div>
-          )}
-          <img
-            ref={imgRef}
-            src={imgUrl}
-            alt="图片"
-            onLoad={handleImageLoad}
-            style={{
-              position: "absolute",
-              left: "50%",
-              top: "50%",
-              transform: `translate(calc(-50% + ${translateX}px), calc(-50% + ${translateY}px)) scale(${scale})`,
-              maxWidth: "none",
-              maxHeight: "none",
-              opacity: imageLoaded ? 1 : 0,
-              cursor:
-                scale > 1 && isDragging
-                  ? "grabbing"
-                  : scale > 1
-                  ? "grab"
-                  : "default",
-              transition:
-                isDragging || isPinching ? "none" : "transform 0.2s ease",
-              userSelect: "none",
-            }}
-            draggable={false}
-          />
-        </div>
-
-        <div className="absolute bottom-4 left-0 w-full text-center z-10">
-          <div className="bg-black/50 text-white/80 inline-block px-4 py-2 rounded-full text-sm">
-            {isMobile ? (
-              <>
-                <FaExpandArrowsAlt className="inline-block mr-2" />{" "}
-                双指缩放，单指拖动
-              </>
-            ) : (
-              <>
-                <FaCompress className="inline-block mr-2" />{" "}
-                鼠标滚轮缩放，左键拖动
-              </>
-            )}
-          </div>
-        </div>
-      </Modal.Body>
+      <div
+        ref={containerRef}
+        className="w-full h-screen flex items-center justify-center p-4"
+        onClick={handleClose}
+        onWheel={handleWheel}
+        onMouseDown={handleMouseDown}
+        onMouseMove={handleMouseMove}
+        onMouseUp={handleMouseUp}
+        onMouseLeave={() => setIsDragging(false)} // 鼠标离开区域时强制结束拖动
+        style={{
+          cursor: isDragging ? "grabbing" : scale > 1 ? "grab" : "zoom-in",
+        }}
+      >
+        <img
+          src={imgUrl}
+          alt="放大查看"
+          style={{
+            maxWidth: "100%",
+            maxHeight: "100%",
+            objectFit: "contain",
+            transform: `scale(${scale}) translate(${position.x}px, ${position.y}px)`,
+            transition: "transform 0.1s ease",
+          }}
+          onDoubleClick={handleDoubleClick}
+          onClick={(e) => e.stopPropagation()} // 防止点击图片关闭模态框
+        />
+      </div>
     </Modal>
   );
 };

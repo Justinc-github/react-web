@@ -1,11 +1,11 @@
-import { NavLink, Outlet, useLocation, useNavigate } from "react-router-dom";
+import { NavLink, Outlet, useLocation } from "react-router-dom";
 
 const HelpLayout = () => {
   const location = useLocation();
   // 判断当前一级目录
   // const isApp = location.pathname.startsWith("/help/app");
   // const isWeb = location.pathname.startsWith("/help/web");
-  const navigate = useNavigate();
+  // const navigate = useNavigate();
   const params = new URLSearchParams(location.search);
   const isWebView = params.get("webview") === "1";
   return (
@@ -36,12 +36,12 @@ const HelpLayout = () => {
                 网站
               </NavLink>
             </nav>
-            <button
+            {/* <button
               className="btn btn-outline-primary"
               onClick={() => navigate("/")}
             >
               返回首页
-            </button>
+            </button> */}
           </div>
         </div>
       )}

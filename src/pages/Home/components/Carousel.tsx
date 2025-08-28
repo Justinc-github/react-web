@@ -44,7 +44,7 @@ export default function CarouselComponent() {
     <Container className="my-4">
       <h1 className="text-center fw-bold display-5 mb-4">今年的我们</h1>
 
-      <div className="mx-auto" style={{ maxWidth: "800px" }}>
+      <div className="mx-auto" style={{ maxWidth: "1000px" }}>
         <Carousel
           interval={5000}
           indicators={true}

@@ -8,19 +8,27 @@ export default function Footer() {
       <div className={styles["footer-container"]}>
         <div className={styles["footer-section"]}>
           <h3>关于我们</h3>
-          <p>大学创新团队</p>
+          <p>
+            校级团队，成立于2016年。团队名称“众智创新”取自：“积力之所举，则无不胜也；众智之所为，则无不成也。”，旨在聚集众智以得创新。
+          </p>
         </div>
         <div className={styles["footer-section"]}>
           <h3>下载</h3>
           <div>
-            <a href="https://www.pgyer.com/zhong_zhi" target="_blank">
+            <a
+              href="https://gitee.com/justinc-gitee/project_resources/raw/main/static/zhongzhi/zhongzhi-1.1.00+21-setup.apk"
+              target="_blank"
+            >
               <img
                 style={{ height: "50px", width: "50px" }}
                 src={footSvg + "sign.svg"}
                 alt="android"
               />
             </a>
-            <a href="/download" target="_blank">
+            <a
+              href="https://gitee.com/justinc-gitee/project_resources/raw/main/static/zhongzhi_windows/zhongzhi_windows-1.0.0+1-setup.exe"
+              target="_blank"
+            >
               <img
                 style={{ height: "30px", width: "30px" }}
                 src={footSvg + "windows.svg"}
@@ -38,7 +46,6 @@ export default function Footer() {
                 width: "20px",
                 verticalAlign: "middle",
                 position: "relative",
-                top: "-7px",
               }}
               src={footSvg + "QQ.svg"}
               alt="QQ"
@@ -54,7 +61,6 @@ export default function Footer() {
                 width: "20px",
                 verticalAlign: "middle",
                 position: "relative",
-                top: "-7px",
               }}
               src={footSvg + "地址.svg"}
               alt="地址"

@@ -13,24 +13,17 @@ interface Project {
 const projects: Project[] = [
   {
     id: 1,
-    name: "PS、PR",
-    members: 3,
-    subject: "方向一",
+    name: "JAVA、PYTHON、C#",
+    members: 5,
+    subject: "上位机",
     image: "https://picsum.photos/400/300?random=2",
   },
   {
     id: 2,
-    name: "C#、Java",
-    members: 6,
-    subject: "方向二",
+    name: "PLC、Solid Edge、LAD",
+    members: 13,
+    subject: "下位机",
     image: "https://picsum.photos/400/300?random=3",
-  },
-  {
-    id: 3,
-    name: "PLC",
-    members: 12,
-    subject: "方向三",
-    image: "https://picsum.photos/400/300?random=4",
   },
 ];
 
@@ -50,7 +43,7 @@ const TeamProjects: React.FC = () => {
 
         <Row className="gy-4">
           {projects.map((project) => (
-            <Col key={project.id} xs={12} md={6} lg={4}>
+            <Col key={project.id} xs={12} md={6} lg={6}>
               <Card className="h-100 shadow-sm border-0 rounded-3 overflow-hidden">
                 <div
                   className="position-relative bg-light"

@@ -254,20 +254,16 @@ const TeamMembersSection: React.FC = () => {
         <div className="text-center mb-5">
           <h2 className="display-5 fw-bold text-dark mb-4">
             {projectId === 1
-              ? "方向一成员"
+              ? "上位机"
               : projectId === 2
-              ? "方向二成员"
-              : projectId === 3
-              ? "方向三成员"
+              ? "下位机"
               : "团队成员"}
           </h2>
           <p className="lead text-muted max-w-3xl mx-auto mb-5">
             {projectId === 1
-              ? "负责视频剪辑及 PPT 制作，运用 PR、PS 等软件，高效完成视觉内容创作"
+              ? "上位机作为工业控制系统的核心管理单元，主要承担着监控、数据采集、指令下发和人机交互等关键任务。"
               : projectId === 2
-              ? "负责与下位机的通讯交互，同时开发软件及网页平台，实现数据的实时接收、处理与可视化展示"
-              : projectId === 3
-              ? "负责 PLC 程序设计与开发，通过编写控制逻辑，实现对电机、气泵等设备的运行管理"
+              ? "下位机作为工业控制系统的现场执行层与数据采集端，主要承担实时数据采集、设备控制、状态监测和通信交互等核心任务。"
               : "方向介绍"}
           </p>
         </div>

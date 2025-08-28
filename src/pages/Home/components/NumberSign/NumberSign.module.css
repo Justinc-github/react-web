@@ -1,0 +1,260 @@
+/* NumberSign.module.css */
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+  font-family: 'Microsoft YaHei', sans-serif;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+
+.title {
+  text-align: center;
+  color: #2c3e50;
+  margin-bottom: 30px;
+  padding-bottom: 15px;
+  border-bottom: 2px solid #eee;
+}
+
+.count {
+  margin-bottom: 20px;
+  text-align: center;
+  font-size: 1.2em;
+  color: #7f8c8d;
+}
+
+.count span {
+  font-weight: bold;
+  color: #3498db;
+}
+
+.tableContainer {
+  overflow-x: auto;
+  margin-top: 20px;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.membersTable {
+  width: 100%;
+  border-collapse: collapse;
+  background-color: white;
+  table-layout: fixed;
+}
+
+.membersTable th,
+.membersTable td {
+  padding: 14px 16px;
+  text-align: left;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.membersTable th {
+  background-color: #3498db;
+  color: white;
+  font-weight: 600;
+  position: sticky;
+  top: 0;
+}
+
+.membersTable tr:nth-child(even) {
+  background-color: #f8f9fa;
+}
+
+.membersTable tr:hover {
+  background-color: #e8f4fc;
+}
+
+/* 籍贯表头样式 */
+.jiGuanHeader {
+  width: 150px;
+}
+
+/* 籍贯单元格样式 - 单行显示，超出部分显示省略号 */
+.jiGuanCell {
+  max-width: 150px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.loading {
+  text-align: center;
+  padding: 40px;
+  font-size: 1.2em;
+  color: #7f8c8d;
+}
+
+.error {
+  text-align: center;
+  padding: 40px;
+  color: #e74c3c;
+}
+
+.exportBtn {
+  padding: 10px 20px;
+  background-color: #27ae60;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 1em;
+  transition: background-color 0.3s;
+  white-space: nowrap;
+  margin-left: auto;
+}
+
+.exportBtn:hover {
+  background-color: #219653;
+}
+
+.deleteBtn {
+  padding: 6px 12px;
+  background-color: #e74c3c;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.9em;
+  transition: background-color 0.3s;
+}
+
+.deleteBtn:hover {
+  background-color: #c0392b;
+}
+
+.retryBtn {
+  margin-top: 15px;
+  padding: 10px 20px;
+  background-color: #3498db;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 1em;
+}
+
+.retryBtn:hover {
+  background-color: #2980b9;
+}
+
+/* 模态框样式 */
+.modalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.modal {
+  background-color: white;
+  padding: 25px;
+  border-radius: 8px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+  max-width: 400px;
+  width: 90%;
+}
+
+.modal h3 {
+  margin-top: 0;
+  color: #2c3e50;
+  border-bottom: 1px solid #eee;
+  padding-bottom: 10px;
+}
+
+.modal p {
+  margin: 15px 0;
+}
+
+.warningText {
+  color: #e74c3c;
+  font-weight: bold;
+}
+
+.modalButtons {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+.cancelButton {
+  padding: 8px 16px;
+  background-color: #95a5a6;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.cancelButton:hover {
+  background-color: #7f8c8d;
+}
+
+.confirmButton {
+  padding: 8px 16px;
+  background-color: #e74c3c;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.confirmButton:hover {
+  background-color: #c0392b;
+}
+
+@media (max-width: 768px) {
+  .container {
+    padding: 10px;
+  }
+  
+  .header {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 15px;
+  }
+  
+  .title {
+    text-align: center;
+    margin-bottom: 15px;
+  }
+  
+  .exportBtn {
+    margin-left: 0;
+    align-self: flex-end;
+  }
+  
+  .membersTable th,
+  .membersTable td {
+    padding: 10px 12px;
+    font-size: 0.9em;
+  }
+  
+  .jiGuanHeader,
+  .jiGuanCell {
+    max-width: 100px;
+  }
+  
+  /* 移动端模态框样式 */
+  .modal {
+    width: 85%;
+    padding: 20px;
+  }
+  
+  .modalButtons {
+    flex-direction: column;
+  }
+}

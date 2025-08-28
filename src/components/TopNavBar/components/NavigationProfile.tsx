@@ -38,7 +38,14 @@ export default function NavigationProfile() {
         <Dropdown.Item as={Link} to="/enroll">
           我要报名
         </Dropdown.Item>
-        <Dropdown.Item as="a" href="https://openlist.zhongzhi.site" target="_blank">
+        <Dropdown.Item as={Link} to="/home/number/sign">
+          报名成员
+        </Dropdown.Item>
+        <Dropdown.Item
+          as="a"
+          href="https://openlist.zhongzhi.site"
+          target="_blank"
+        >
           团队资源
         </Dropdown.Item>
         <Dropdown.Divider />

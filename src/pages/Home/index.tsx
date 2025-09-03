@@ -2,6 +2,8 @@
 import CarouselComponent from './components/Carousel';
 import FarewellModule from './components/Farewell';
 import Features from './components/Features';
+import TeacherShow from './components/TeacherShow';
+import TeamIntroduction from './components/TeamIntroduction';
 import TeamProjects from './components/TeamProjects';
 
 export default function Home() {
@@ -9,8 +11,10 @@ export default function Home() {
   return (
     <div className="home">
       <CarouselComponent />
+      <TeamIntroduction />
       <Features />
       <TeamProjects />
+      <TeacherShow/>
       <FarewellModule />
     </div>
   );

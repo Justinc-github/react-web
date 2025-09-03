@@ -43,8 +43,16 @@ export default function NumberSign() {
 
       // 同时获取成员信息和管理员列表
       const [membersResponse, adminResponse] = await Promise.all([
-        fetch("https://api.zhongzhi.site/information/team/member/sign"),
-        fetch("https://api.zhongzhi.site/information/team/member/admin"),
+        fetch("https://api.zhongzhi.site/information/team/member/sign", {
+          headers: {
+            'Accept': 'application/json; charset=utf-8',
+          }
+        }),
+        fetch("https://api.zhongzhi.site/information/team/member/admin", {
+          headers: {
+            'Accept': 'application/json; charset=utf-8',
+          }
+        }),
       ]);
 
       if (!membersResponse.ok) {
@@ -85,6 +93,15 @@ export default function NumberSign() {
     return `****${phone.slice(-4)}`;
   };
 
+  // 格式化日期和时间
+  const formatDateTime = (dateString: string) => {
+    const date = new Date(dateString);
+    return {
+      date: date.toLocaleDateString('zh-CN'),
+      time: date.toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' })
+    };
+  };
+
   // 导出Excel文件（包含所有信息）
   const exportToExcel = () => {
     // 再次确认权限（防止UI被绕过）
@@ -100,21 +117,25 @@ export default function NumberSign() {
     }
 
     // 准备导出数据（包含所有字段）
-    const exportData = members.map((member) => ({
-      ID: member.id,
-      学号: member.xueHao,
-      姓名: member.xingMing,
-      班级: member.banJi,
-      手机号: member.shouJiHao,
-      性别: member.xingbie,
-      籍贯: member.jiGuan,
-      语文成绩: member.Chinese,
-      数学成绩: member.math,
-      英语成绩: member.English,
-      小科成绩: member.xiaoKe,
-      总分: member.grade,
-      报名时间: new Date(member.create_time).toLocaleString("zh-CN"),
-    }));
+    const exportData = members.map((member) => {
+      const { date, time } = formatDateTime(member.create_time);
+      return {
+        ID: member.id,
+        学号: member.xueHao,
+        姓名: member.xingMing,
+        班级: member.banJi,
+        手机号: member.shouJiHao,
+        性别: member.xingbie,
+        籍贯: member.jiGuan,
+        语文成绩: member.Chinese,
+        数学成绩: member.math,
+        英语成绩: member.English,
+        小科成绩: member.xiaoKe,
+        总分: member.grade,
+        报名日期: date,
+        报名时间: time,
+      };
+    });
 
     // 创建工作簿和工作表
     const worksheet = XLSX.utils.json_to_sheet(exportData);
@@ -135,7 +156,8 @@ export default function NumberSign() {
       { wch: 10 }, // 英语成绩
       { wch: 10 }, // 小科成绩
       { wch: 10 }, // 总分
-      { wch: 20 }, // 报名时间
+      { wch: 12 }, // 报名日期
+      { wch: 10 }, // 报名时间
     ];
     worksheet["!cols"] = colWidths;
 
@@ -176,7 +198,7 @@ export default function NumberSign() {
 
     try {
       const response = await fetch(
-        `http://127.0.0.1:8000/information/team/member/sign/${selectedMember.id}`,
+        `https://api.zhongzhi.site/information/team/member/sign/${selectedMember.id}`,
         {
           method: "DELETE",
         }
@@ -268,34 +290,39 @@ export default function NumberSign() {
               <th>手机号</th>
               <th>性别</th>
               <th className={styles.jiGuanHeader}>籍贯</th>
+              <th>报名日期</th>
               <th>报名时间</th>
               {hasExportPermission && <th>操作</th>}
             </tr>
           </thead>
           <tbody>
-            {members.map((member) => (
-              <tr key={member.id}>
-                <td>{member.xueHao}</td>
-                <td>{member.xingMing}</td>
-                <td>{member.banJi}</td>
-                <td>{formatPhoneNumber(member.shouJiHao)}</td>
-                <td>{member.xingbie}</td>
-                <td className={styles.jiGuanCell} title={member.jiGuan}>
-                  {member.jiGuan}
-                </td>
-                <td>{new Date(member.create_time).toLocaleString("zh-CN")}</td>
-                {hasExportPermission && (
-                  <td>
-                    <button
-                      onClick={() => openDeleteModal(member)}
-                      className={styles.deleteBtn}
-                    >
-                      删除
-                    </button>
+            {members.map((member) => {
+              const { date, time } = formatDateTime(member.create_time);
+              return (
+                <tr key={member.id}>
+                  <td>{member.xueHao}</td>
+                  <td>{member.xingMing}</td>
+                  <td>{member.banJi}</td>
+                  <td>{formatPhoneNumber(member.shouJiHao)}</td>
+                  <td>{member.xingbie}</td>
+                  <td className={styles.jiGuanCell} title={member.jiGuan}>
+                    {member.jiGuan}
                   </td>
-                )}
-              </tr>
-            ))}
+                  <td>{date}</td>
+                  <td>{time}</td>
+                  {hasExportPermission && (
+                    <td>
+                      <button
+                        onClick={() => openDeleteModal(member)}
+                        className={styles.deleteBtn}
+                      >
+                        删除
+                      </button>
+                    </td>
+                  )}
+                </tr>
+              );
+            })}
           </tbody>
         </table>
       </div>

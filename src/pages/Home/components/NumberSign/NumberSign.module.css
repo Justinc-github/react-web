@@ -3,7 +3,9 @@
   max-width: 1200px;
   margin: 0 auto;
   padding: 20px;
-  font-family: 'Microsoft YaHei', sans-serif;
+  font-family: 'Microsoft YaHei', 'PingFang SC', 'Helvetica Neue', Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 .header {
@@ -39,6 +41,7 @@
   margin-top: 20px;
   border-radius: 8px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  -webkit-overflow-scrolling: touch;
 }
 
 .membersTable {
@@ -46,6 +49,7 @@
   border-collapse: collapse;
   background-color: white;
   table-layout: fixed;
+  word-break: break-all;
 }
 
 .membersTable th,
@@ -53,6 +57,7 @@
   padding: 14px 16px;
   text-align: left;
   border-bottom: 1px solid #e0e0e0;
+  word-wrap: break-word;
 }
 
 .membersTable th {
@@ -216,9 +221,16 @@
   background-color: #c0392b;
 }
 
+@supports not (font-family: 'Microsoft YaHei') {
+  .container {
+    font-family: 'PingFang SC', 'Helvetica Neue', Arial, sans-serif;
+  }
+}
+
 @media (max-width: 768px) {
   .container {
     padding: 10px;
+    font-size: 14px;
   }
   
   .header {
@@ -230,16 +242,18 @@
   .title {
     text-align: center;
     margin-bottom: 15px;
+    font-size: 1.5rem;
   }
   
   .exportBtn {
     margin-left: 0;
     align-self: flex-end;
+    font-size: 0.9em;
   }
   
   .membersTable th,
   .membersTable td {
-    padding: 10px 12px;
+    padding: 8px 10px;
     font-size: 0.9em;
   }
   
@@ -248,10 +262,17 @@
     max-width: 100px;
   }
   
+  /* 确保操作列在移动端可见 */
+  .membersTable th:last-child,
+  .membersTable td:last-child {
+    min-width: 60px;
+  }
+  
   /* 移动端模态框样式 */
   .modal {
     width: 85%;
-    padding: 20px;
+    padding: 15px;
+    font-size: 14px;
   }
   
   .modalButtons {

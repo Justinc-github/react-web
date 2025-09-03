@@ -9,7 +9,7 @@ export default function Footer() {
         <div className={styles["footer-section"]}>
           <h3>关于我们</h3>
           <p>
-            校级团队，成立于2016年。团队名称“众智创新”取自：“积力之所举，则无不胜也；众智之所为，则无不成也。”，旨在聚集众智以得创新。
+            辽宁工业大学校级团队，成立于2016年。
           </p>
         </div>
         <div className={styles["footer-section"]}>

@@ -29,8 +29,20 @@ export default function CarouselComponent() {
     },
     {
       id: 3,
+      src: "https://cdn.jsdelivr.net/gh/Justinc-github/project_resources@main/web/home/2025-05-17合照.jpg",
+      alt: "比赛照片",
+      caption: "",
+    },
+    {
+      id: 4,
       src: "https://cdn.jsdelivr.net/gh/Justinc-github/project_resources@main/web/home/2025-06-14合照.jpg",
       alt: "送学长照片",
+      caption: "",
+    },
+    {
+      id: 5,
+      src: "https://cdn.jsdelivr.net/gh/Justinc-github/project_resources@main/web/home/2025-08-11合照.jpg",
+      alt: "比赛照片",
       caption: "",
     },
   ];

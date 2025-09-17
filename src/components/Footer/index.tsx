@@ -8,15 +8,13 @@ export default function Footer() {
       <div className={styles["footer-container"]}>
         <div className={styles["footer-section"]}>
           <h3>关于我们</h3>
-          <p>
-            辽宁工业大学校级团队，成立于2016年。
-          </p>
+          <p>辽宁工业大学校级团队，成立于2016年。</p>
         </div>
         <div className={styles["footer-section"]}>
           <h3>下载</h3>
           <div>
             <a
-              href="https://gitee.com/justinc-gitee/project_resources/raw/main/static/zhongzhi/zhongzhi-1.1.00+21-setup.apk"
+              href="https://www.pgyer.com/zhong_zhi"
               target="_blank"
             >
               <img
@@ -26,7 +24,7 @@ export default function Footer() {
               />
             </a>
             <a
-              href="https://gitee.com/justinc-gitee/project_resources/raw/main/static/zhongzhi_windows/zhongzhi_windows-1.0.0+1-setup.exe"
+              href="https://d.feiliupan.com/t/95994132723404800/zhongzhi_windows-1.0.0+1-setup.exe"
               target="_blank"
             >
               <img

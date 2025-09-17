@@ -2,6 +2,7 @@
 import CarouselComponent from './components/Carousel';
 import FarewellModule from './components/Farewell';
 import Features from './components/Features';
+// import HonorWall from './components/HonorWall';
 import TeacherShow from './components/TeacherShow';
 import TeamIntroduction from './components/TeamIntroduction';
 import TeamProjects from './components/TeamProjects';
@@ -16,6 +17,7 @@ export default function Home() {
       <TeamProjects />
       <TeacherShow/>
       <FarewellModule />
+      {/* <HonorWall/> */}
     </div>
   );
 }

@@ -8,6 +8,8 @@ declare module "*.css" {
   export default content;
 }
 
+declare module "react-area-linkage";
+declare module "area-data";
 declare module "bootstrap/dist/css/bootstrap.min.css";
 
 declare module "*.md?raw" {

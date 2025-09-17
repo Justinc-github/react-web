@@ -14,14 +14,14 @@ const projects: Project[] = [
   {
     id: 1,
     name: "JAVA、PYTHON、C#",
-    members: 6,
+    members: 7,
     subject: "上位机",
     image: "https://picsum.photos/400/300?random=2",
   },
   {
     id: 2,
     name: "PLC、Solid Edge、LAD",
-    members: 11,
+    members: 10,
     subject: "下位机",
     image: "https://picsum.photos/400/300?random=3",
   },

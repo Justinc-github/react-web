@@ -35,9 +35,6 @@ export default function NavigationProfile() {
         ></Image>
       </Dropdown.Toggle>
       <Dropdown.Menu className="shadow-sm border-0">
-        <Dropdown.Item as={Link} to="/enroll">
-          我要报名
-        </Dropdown.Item>
         <Dropdown.Item as={Link} to="/home/number/sign">
           报名成员
         </Dropdown.Item>

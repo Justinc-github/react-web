@@ -45,6 +45,18 @@ export default function CarouselComponent() {
       alt: "比赛照片",
       caption: "",
     },
+    {
+      id: 6,
+      src: "https://lz.sinaimg.cn/large/008txcFbgy1i58xenjzjmj34g02yox6t.jpg",
+      alt: "比赛照片",
+      caption: "",
+    },
+    {
+      id: 7,
+      src: "https://lz.sinaimg.cn/large/008txcFbgy1i58xmf4tg4j30zj0vyjt9.jpg",
+      alt: "比赛照片",
+      caption: "",
+    },
   ];
 
   const handleImageClick = (imgUrl: string) => {

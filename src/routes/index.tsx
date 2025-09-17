@@ -14,10 +14,11 @@ import Unauthorized from "../components/Unauthorized";
 import VideoPlayer from "../components/VideoPlayer";
 import Download from "../pages/WindowsDownload";
 import AuthRoute from "../pages/Auth/utils/AuthRoute";
-import StudentForm from "../pages/Entroll";
+// import StudentForm from "../pages/Entroll";
 import TeamMembersSection from "../pages/Home/components/TeamProjects/components/TeamMembersSection";
 import GraduatePrevious from "../pages/Home/components/Farewell/GraduatePrevious";
 import NumberSign from "../pages/Home/components/NumberSign";
+import SeatManagement from "../pages/Seat";
 
 export default [
   {
@@ -38,7 +39,7 @@ export default [
   },
   {
     path: "/home/number/sign",
-    element: <NumberSign/>
+    element: <NumberSign />,
   },
   helpRoutes,
   {
@@ -50,6 +51,14 @@ export default [
     element: (
       <AuthRoute>
         <Log />
+      </AuthRoute>
+    ),
+  },
+  {
+    path: "/seat",
+    element: (
+      <AuthRoute>
+        <SeatManagement />
       </AuthRoute>
     ),
   },
@@ -77,14 +86,16 @@ export default [
       </AuthRoute>
     ),
   },
-  {
-    path: "/enroll",
-    element: (
-      <AuthRoute>
-        <StudentForm />
-      </AuthRoute>
-    ),
-  },
+
+  // 报名入口
+  // {
+  //   path: "/enroll",
+  //   element: (
+  //     <AuthRoute>
+  //       <StudentForm />
+  //     </AuthRoute>
+  //   ),
+  // },
   {
     path: "/log/pages",
     element: (

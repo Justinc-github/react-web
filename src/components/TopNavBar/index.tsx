@@ -12,17 +12,17 @@ export default function NavigationBar() {
             主页
           </Nav.Link>
         </Nav.Item>
-        {/* <Nav.Item>
-          <Nav.Link as={Link} to="/log" eventKey="/log">
-            日志
+        <Nav.Item>
+          <Nav.Link as={Link} to="/seat" eventKey="/seat">
+            座位排布
           </Nav.Link>
-        </Nav.Item> */}
+        </Nav.Item>
         <Nav.Item>
           <Nav.Link as={Link} to="/help/web/intro" eventKey="/help">
             帮助中心
           </Nav.Link>
         </Nav.Item>
-        <div style={{width: "10px"}}></div>
+        <div style={{ width: "10px" }}></div>
         <Nav.Item className="d-flex align-items-center">
           <NavigationProfile />
         </Nav.Item>

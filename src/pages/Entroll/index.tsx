@@ -1,5 +1,5 @@
 // StudentForm.tsx
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import axios from "axios";
 import {
   Container,
@@ -12,16 +12,15 @@ import {
   InputGroup,
   ProgressBar,
 } from "react-bootstrap";
-import {
-  // FaCalculator,
-  FaCheck,
-  FaArrowLeft,
-  FaArrowRight,
-} from "react-icons/fa";
+import { FaCheck, FaArrowLeft, FaArrowRight } from "react-icons/fa";
 import "bootstrap/dist/css/bootstrap.min.css";
 import { getAuthInfo } from "../Auth/utils/auth";
+import RegionSelector from "./components/RegionSelector";
+import { useNavigate } from "react-router-dom"; // 添加路由导航
 
 const StudentForm: React.FC = () => {
+  const navigate = useNavigate(); // 获取导航函数
+
   // 表单状态管理
   const [formData, setFormData] = useState({
     xueHao: "",
@@ -40,8 +39,23 @@ const StudentForm: React.FC = () => {
   const [submitting, setSubmitting] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState("");
-  const [step, setStep] = useState(1); // 1: 个人信息, 2: 成绩信息
+  const [step, setStep] = useState(1);
   const ENROLL_CODE = "https://api.zhongzhi.site/enroll/code";
+
+  // 自动计算总分
+  useEffect(() => {
+    const total =
+      Number(formData.Chinese) +
+      Number(formData.math) +
+      Number(formData.English) +
+      Number(formData.xiaoKe);
+
+    setFormData((prev) => ({
+      ...prev,
+      grade: total,
+    }));
+  }, [formData.Chinese, formData.math, formData.English, formData.xiaoKe]);
+
   // 处理输入变化
   const handleChange = (
     e: React.ChangeEvent<
@@ -50,7 +64,6 @@ const StudentForm: React.FC = () => {
   ) => {
     const { name, value } = e.target;
 
-    // 处理数字字段
     const numericFields = ["Chinese", "math", "English", "xiaoKe", "grade"];
     const newValue = numericFields.includes(name)
       ? parseFloat(value) || 0
@@ -62,12 +75,13 @@ const StudentForm: React.FC = () => {
     }));
   };
 
-  // // 计算总分
-  // const calculateTotal = () => {
-  //   const { Chinese, math, English, xiaoKe } = formData;
-  //   const total = Chinese + math + English + xiaoKe;
-  //   setFormData((prev) => ({ ...prev, grade: total }));
-  // };
+  // 处理地区选择变化
+  const handleRegionChange = (selectedRegion: string) => {
+    setFormData((prev) => ({
+      ...prev,
+      jiGuan: selectedRegion,
+    }));
+  };
 
   // 验证个人信息是否完整
   const validatePersonalInfo = () => {
@@ -99,7 +113,6 @@ const StudentForm: React.FC = () => {
       }
     }
 
-    // 验证手机号格式
     if (!/^1\d{10}$/.test(formData.shouJiHao)) {
       setError("手机号格式不正确，应为11位数字");
       return false;
@@ -117,19 +130,18 @@ const StudentForm: React.FC = () => {
       { name: "小科", value: formData.xiaoKe, max: 300 },
     ];
 
+    // 检查成绩是否填写（不能为0）
     for (const score of scores) {
+      if (score.value === 0) {
+        setError(`${score.name}成绩不能为空，请输入成绩`);
+        return false;
+      }
+
       if (score.value < 0 || score.value > score.max) {
         setError(`${score.name}成绩必须在0-${score.max}之间`);
         return false;
       }
     }
-
-    // // 验证总分
-    // const calculatedTotal =
-    //   formData.Chinese + formData.math + formData.English + formData.xiaoKe;
-    // if (Math.abs(calculatedTotal - formData.grade) > 0.01) {
-    //   calculateTotal();
-    // }
 
     return true;
   };
@@ -161,7 +173,6 @@ const StudentForm: React.FC = () => {
     }
 
     try {
-      // 提交学生表单数据
       const response = await axios.post(
         "https://api.zhongzhi.site/students/",
         formData
@@ -169,12 +180,12 @@ const StudentForm: React.FC = () => {
       console.log(response);
       setSuccess(true);
 
-      // 获取登录存储的邮箱
       try {
         const authInfo = getAuthInfo();
         if (authInfo && authInfo.email) {
-          // 调用邮箱发送接口
-          await axios.post(`${ENROLL_CODE}?email=${encodeURIComponent(authInfo.email)}`);
+          await axios.post(
+            `${ENROLL_CODE}?email=${encodeURIComponent(authInfo.email)}`
+          );
           console.log("报名成功邮件已发送");
         } else {
           console.warn("未找到用户邮箱信息");
@@ -183,6 +194,7 @@ const StudentForm: React.FC = () => {
         console.error("邮件发送失败:", emailError);
       }
 
+      // 重置表单
       setFormData({
         xueHao: "",
         xingMing: "",
@@ -197,10 +209,11 @@ const StudentForm: React.FC = () => {
         grade: 0,
       });
 
-      // 3秒后隐藏成功提示并返回第一步
+      // 3秒后跳转到主页
       setTimeout(() => {
         setSuccess(false);
         setStep(1);
+        navigate("/"); // 跳转到主页
       }, 3000);
     } catch (error: unknown) {
       console.error("提交失败:", error);
@@ -227,7 +240,6 @@ const StudentForm: React.FC = () => {
     <Card className="mb-4 border-0">
       <Card.Body>
         <h4 className="mb-4">学生基本信息</h4>
-
         <Form>
           <Row>
             <Col md={6}>
@@ -242,7 +254,6 @@ const StudentForm: React.FC = () => {
                 />
               </Form.Group>
             </Col>
-
             <Col md={6}>
               <Form.Group className="mb-3">
                 <Form.Label>姓名</Form.Label>
@@ -256,7 +267,6 @@ const StudentForm: React.FC = () => {
               </Form.Group>
             </Col>
           </Row>
-
           <Row>
             <Col md={6}>
               <Form.Group className="mb-3">
@@ -270,7 +280,6 @@ const StudentForm: React.FC = () => {
                 />
               </Form.Group>
             </Col>
-
             <Col md={6}>
               <Form.Group className="mb-3">
                 <Form.Label>手机号</Form.Label>
@@ -283,10 +292,10 @@ const StudentForm: React.FC = () => {
                   required
                   placeholder="11位手机号码"
                 />
+                <Form.Text muted>请输入11位手机号码</Form.Text>
               </Form.Group>
             </Col>
           </Row>
-
           <Row>
             <Col md={6}>
               <Form.Group className="mb-3">
@@ -303,16 +312,13 @@ const StudentForm: React.FC = () => {
                 </Form.Select>
               </Form.Group>
             </Col>
-
             <Col md={6}>
               <Form.Group className="mb-3">
                 <Form.Label>籍贯</Form.Label>
-                <Form.Control
-                  type="text"
-                  name="jiGuan"
+                <RegionSelector
                   value={formData.jiGuan}
-                  onChange={handleChange}
-                  required
+                  onChange={handleRegionChange}
+                  placeholder="请选择籍贯"
                 />
               </Form.Group>
             </Col>
@@ -327,12 +333,16 @@ const StudentForm: React.FC = () => {
     <Card className="mb-4 border-0">
       <Card.Body>
         <h4 className="mb-4">学生成绩信息</h4>
-
+        <Alert variant="info" className="mb-3">
+          <strong>注意：</strong>所有成绩字段都必须填写，不能为空。
+        </Alert>
         <Form>
           <Row>
             <Col md={3}>
               <Form.Group className="mb-3">
-                <Form.Label>语文成绩</Form.Label>
+                <Form.Label>
+                  语文成绩 <span className="text-danger">*</span>
+                </Form.Label>
                 <InputGroup>
                   <Form.Control
                     type="number"
@@ -342,16 +352,19 @@ const StudentForm: React.FC = () => {
                     min="0"
                     max="150"
                     step="0.01"
+                    required
+                    placeholder="请输入成绩"
                   />
                   <InputGroup.Text>分</InputGroup.Text>
                 </InputGroup>
                 <Form.Text muted>满分150分</Form.Text>
               </Form.Group>
             </Col>
-
             <Col md={3}>
               <Form.Group className="mb-3">
-                <Form.Label>数学成绩</Form.Label>
+                <Form.Label>
+                  数学成绩 <span className="text-danger">*</span>
+                </Form.Label>
                 <InputGroup>
                   <Form.Control
                     type="number"
@@ -361,16 +374,19 @@ const StudentForm: React.FC = () => {
                     min="0"
                     max="150"
                     step="0.01"
+                    required
+                    placeholder="请输入成绩"
                   />
                   <InputGroup.Text>分</InputGroup.Text>
                 </InputGroup>
                 <Form.Text muted>满分150分</Form.Text>
               </Form.Group>
             </Col>
-
             <Col md={3}>
               <Form.Group className="mb-3">
-                <Form.Label>英语成绩</Form.Label>
+                <Form.Label>
+                  英语成绩 <span className="text-danger">*</span>
+                </Form.Label>
                 <InputGroup>
                   <Form.Control
                     type="number"
@@ -380,16 +396,19 @@ const StudentForm: React.FC = () => {
                     min="0"
                     max="150"
                     step="0.01"
+                    required
+                    placeholder="请输入成绩"
                   />
                   <InputGroup.Text>分</InputGroup.Text>
                 </InputGroup>
                 <Form.Text muted>满分150分</Form.Text>
               </Form.Group>
             </Col>
-
             <Col md={3}>
               <Form.Group className="mb-3">
-                <Form.Label>小科成绩</Form.Label>
+                <Form.Label>
+                  小科成绩 <span className="text-danger">*</span>
+                </Form.Label>
                 <InputGroup>
                   <Form.Control
                     type="number"
@@ -399,6 +418,8 @@ const StudentForm: React.FC = () => {
                     min="0"
                     max="300"
                     step="0.01"
+                    required
+                    placeholder="请输入成绩"
                   />
                   <InputGroup.Text>分</InputGroup.Text>
                 </InputGroup>
@@ -406,7 +427,6 @@ const StudentForm: React.FC = () => {
               </Form.Group>
             </Col>
           </Row>
-
           <Row className="mt-3">
             <Col md={6}>
               <Form.Group className="mb-3">
@@ -416,24 +436,14 @@ const StudentForm: React.FC = () => {
                     type="number"
                     name="grade"
                     value={formData.grade || ""}
-                    onChange={handleChange}
+                    readOnly
+                    className="bg-light"
                   />
                   <InputGroup.Text>分</InputGroup.Text>
                 </InputGroup>
+                <Form.Text muted>系统自动计算总分</Form.Text>
               </Form.Group>
             </Col>
-
-            {/* <Col md={6} className="d-flex align-items-end mb-3">
-              <Button
-                variant="outline-primary"
-                onClick={calculateTotal}
-                disabled={submitting}
-                type="button"
-              >
-                <FaCalculator className="me-2" />
-                计算总分
-              </Button>
-            </Col> */}
           </Row>
         </Form>
       </Card.Body>
@@ -455,15 +465,13 @@ const StudentForm: React.FC = () => {
                 className="mt-2"
               />
             </Card.Header>
-
             <Card.Body>
               {success && (
                 <Alert variant="success" className="d-flex align-items-center">
                   <FaCheck className="me-2" />
-                  数据提交成功！
+                  数据提交成功！3秒后将自动跳转到主页...
                 </Alert>
               )}
-
               {error && (
                 <Alert
                   variant="danger"
@@ -473,11 +481,7 @@ const StudentForm: React.FC = () => {
                   {error}
                 </Alert>
               )}
-
-              {/* 渲染表单内容 */}
               {step === 1 ? renderPersonalInfo() : renderScores()}
-
-              {/* 导航按钮 */}
               <div className="d-flex justify-content-between">
                 {step === 2 && (
                   <Button
@@ -490,7 +494,6 @@ const StudentForm: React.FC = () => {
                     上一步
                   </Button>
                 )}
-
                 <div className="ms-auto">
                   {step === 1 ? (
                     <Button
@@ -504,9 +507,9 @@ const StudentForm: React.FC = () => {
                   ) : (
                     <Button
                       variant="primary"
-                      type="button" // 关键修改：改为 type="button"
+                      type="button"
                       disabled={submitting}
-                      onClick={handleSubmit} // 直接绑定提交处理函数
+                      onClick={handleSubmit}
                     >
                       {submitting ? "提交中..." : "提交信息"}
                     </Button>
@@ -514,7 +517,6 @@ const StudentForm: React.FC = () => {
                 </div>
               </div>
             </Card.Body>
-
             <Card.Footer className="text-muted">
               学生信息登记系统 | 当前时间: {new Date().toLocaleString()}
             </Card.Footer>

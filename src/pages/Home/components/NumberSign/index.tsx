@@ -41,17 +41,16 @@ export default function NumberSign() {
     try {
       setLoading(true);
 
-      // 同时获取成员信息和管理员列表
       const [membersResponse, adminResponse] = await Promise.all([
         fetch("https://api.zhongzhi.site/information/team/member/sign", {
           headers: {
-            'Accept': 'application/json; charset=utf-8',
-          }
+            Accept: "application/json; charset=utf-8",
+          },
         }),
         fetch("https://api.zhongzhi.site/information/team/member/admin", {
           headers: {
-            'Accept': 'application/json; charset=utf-8',
-          }
+            Accept: "application/json; charset=utf-8",
+          },
         }),
       ]);
 
@@ -69,7 +68,6 @@ export default function NumberSign() {
       setMembers(membersData);
       setAdminUsers(adminData);
 
-      // 检查当前用户是否有导出权限
       const authInfo = getAuthInfo();
       if (authInfo && authInfo.email) {
         const isAdmin = adminData.some(
@@ -87,24 +85,23 @@ export default function NumberSign() {
     }
   };
 
-  // 格式化手机号，只显示后四位
   const formatPhoneNumber = (phone: string) => {
     if (phone.length <= 4) return phone;
     return `****${phone.slice(-4)}`;
   };
 
-  // 格式化日期和时间
   const formatDateTime = (dateString: string) => {
     const date = new Date(dateString);
     return {
-      date: date.toLocaleDateString('zh-CN'),
-      time: date.toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' })
+      date: date.toLocaleDateString("zh-CN"),
+      time: date.toLocaleTimeString("zh-CN", {
+        hour: "2-digit",
+        minute: "2-digit",
+      }),
     };
   };
 
-  // 导出Excel文件（包含所有信息）
   const exportToExcel = () => {
-    // 再次确认权限（防止UI被绕过）
     const authInfo = getAuthInfo();
     const isAdmin =
       authInfo &&
@@ -116,7 +113,6 @@ export default function NumberSign() {
       return;
     }
 
-    // 准备导出数据（包含所有字段）
     const exportData = members.map((member) => {
       const { date, time } = formatDateTime(member.create_time);
       return {
@@ -137,40 +133,35 @@ export default function NumberSign() {
       };
     });
 
-    // 创建工作簿和工作表
     const worksheet = XLSX.utils.json_to_sheet(exportData);
     const workbook = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(workbook, worksheet, "众智创新成员报名信息");
 
-    // 设置列宽
     const colWidths = [
-      { wch: 8 }, // ID
-      { wch: 15 }, // 学号
-      { wch: 10 }, // 姓名
-      { wch: 20 }, // 班级
-      { wch: 15 }, // 手机号
-      { wch: 8 }, // 性别
-      { wch: 20 }, // 籍贯
-      { wch: 10 }, // 语文成绩
-      { wch: 10 }, // 数学成绩
-      { wch: 10 }, // 英语成绩
-      { wch: 10 }, // 小科成绩
-      { wch: 10 }, // 总分
-      { wch: 12 }, // 报名日期
-      { wch: 10 }, // 报名时间
+      { wch: 8 },
+      { wch: 15 },
+      { wch: 10 },
+      { wch: 20 },
+      { wch: 15 },
+      { wch: 8 },
+      { wch: 20 },
+      { wch: 10 },
+      { wch: 10 },
+      { wch: 10 },
+      { wch: 10 },
+      { wch: 10 },
+      { wch: 12 },
+      { wch: 10 },
     ];
     worksheet["!cols"] = colWidths;
 
-    // 生成Excel文件并下载
     const fileName = `众智创新成员报名信息_${
       new Date().toISOString().split("T")[0]
     }.xlsx`;
     XLSX.writeFile(workbook, fileName, { compression: true });
   };
 
-  // 打开删除确认弹窗
   const openDeleteModal = (member: TeamMember) => {
-    // 确认权限
     const authInfo = getAuthInfo();
     const isAdmin =
       authInfo &&
@@ -186,13 +177,11 @@ export default function NumberSign() {
     setShowDeleteModal(true);
   };
 
-  // 关闭删除确认弹窗
   const closeDeleteModal = () => {
     setShowDeleteModal(false);
     setSelectedMember(null);
   };
 
-  // 确认删除成员
   const confirmDelete = async () => {
     if (!selectedMember) return;
 
@@ -208,7 +197,6 @@ export default function NumberSign() {
         throw new Error(`删除失败: ${response.status}`);
       }
 
-      // 从本地状态中移除已删除的成员
       setMembers(members.filter((member) => member.id !== selectedMember.id));
       alert("删除成功");
     } catch (err) {
@@ -242,7 +230,6 @@ export default function NumberSign() {
 
   return (
     <div className={styles.container}>
-      {/* 删除确认弹窗 */}
       {showDeleteModal && selectedMember && (
         <div className={styles.modalOverlay}>
           <div className={styles.modal}>
@@ -259,7 +246,10 @@ export default function NumberSign() {
               >
                 取消
               </button>
-              <button onClick={confirmDelete} className={styles.confirmButton}>
+              <button
+                onClick={confirmDelete}
+                className={styles.confirm极简风格Button}
+              >
                 确认删除
               </button>
             </div>
@@ -286,13 +276,15 @@ export default function NumberSign() {
             <tr>
               <th>学号</th>
               <th>姓名</th>
-              <th>班级</th>
-              <th>手机号</th>
-              <th>性别</th>
-              <th className={styles.jiGuanHeader}>籍贯</th>
+              <th className={styles.desktopOnly}>班级</th>
+              <th className={styles.desktopOnly}>手机号</th>
+              <th className={styles.desktopOnly}>性别</th>
+              <th>籍贯</th>
               <th>报名日期</th>
-              <th>报名时间</th>
-              {hasExportPermission && <th>操作</th>}
+              <th className={styles.desktopOnly}>报名时间</th>
+              {hasExportPermission && (
+                <th className={styles.desktopOnly}>操作</th>
+              )}
             </tr>
           </thead>
           <tbody>
@@ -302,16 +294,18 @@ export default function NumberSign() {
                 <tr key={member.id}>
                   <td>{member.xueHao}</td>
                   <td>{member.xingMing}</td>
-                  <td>{member.banJi}</td>
-                  <td>{formatPhoneNumber(member.shouJiHao)}</td>
-                  <td>{member.xingbie}</td>
+                  <td className={styles.desktopOnly}>{member.banJi}</td>
+                  <td className={styles.desktopOnly}>
+                    {formatPhoneNumber(member.shouJiHao)}
+                  </td>
+                  <td className={styles.desktopOnly}>{member.xingbie}</td>
                   <td className={styles.jiGuanCell} title={member.jiGuan}>
                     {member.jiGuan}
                   </td>
                   <td>{date}</td>
-                  <td>{time}</td>
+                  <td className={styles.desktopOnly}>{time}</td>
                   {hasExportPermission && (
-                    <td>
+                    <td className={styles.desktopOnly}>
                       <button
                         onClick={() => openDeleteModal(member)}
                         className={styles.deleteBtn}

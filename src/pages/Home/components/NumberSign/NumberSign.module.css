@@ -1,4 +1,3 @@
-/* NumberSign.module.css */
 .container {
   max-width: 1200px;
   margin: 0 auto;
@@ -22,6 +21,7 @@
   margin-bottom: 30px;
   padding-bottom: 15px;
   border-bottom: 2px solid #eee;
+  width: 100%;
 }
 
 .count {
@@ -48,8 +48,7 @@
   width: 100%;
   border-collapse: collapse;
   background-color: white;
-  table-layout: fixed;
-  word-break: break-all;
+  table-layout: auto;
 }
 
 .membersTable th,
@@ -76,14 +75,9 @@
   background-color: #e8f4fc;
 }
 
-/* 籍贯表头样式 */
-.jiGuanHeader {
-  width: 150px;
-}
-
-/* 籍贯单元格样式 - 单行显示，超出部分显示省略号 */
+/* 籍贯单元格样式 */
 .jiGuanCell {
-  max-width: 150px;
+  max-width: 200px;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -112,7 +106,6 @@
   font-size: 1em;
   transition: background-color 0.3s;
   white-space: nowrap;
-  margin-left: auto;
 }
 
 .exportBtn:hover {
@@ -137,7 +130,7 @@
 .retryBtn {
   margin-top: 15px;
   padding: 10px 20px;
-  background-color: #3498db;
+  background-color: #349db;
   color: white;
   border: none;
   border-radius: 4px;
@@ -221,16 +214,15 @@
   background-color: #c0392b;
 }
 
-@supports not (font-family: 'Microsoft YaHei') {
-  .container {
-    font-family: 'PingFang SC', 'Helvetica Neue', Arial, sans-serif;
-  }
+/* 桌面端显示所有列 */
+.desktopOnly {
+  display: table-cell;
 }
 
+/* 移动端样式 */
 @media (max-width: 768px) {
   .container {
     padding: 10px;
-    font-size: 14px;
   }
   
   .header {
@@ -240,39 +232,53 @@
   }
   
   .title {
-    text-align: center;
     margin-bottom: 15px;
     font-size: 1.5rem;
   }
   
   .exportBtn {
-    margin-left: 0;
-    align-self: flex-end;
-    font-size: 0.9em;
+    align-self: center;
   }
   
   .membersTable th,
   .membersTable td {
     padding: 8px 10px;
-    font-size: 0.9em;
   }
   
-  .jiGuanHeader,
-  .jiGuanCell {
-    max-width: 100px;
+  /* 移动端隐藏不需要的列 */
+  .desktopOnly {
+    display: none;
   }
   
-  /* 确保操作列在移动端可见 */
-  .membersTable th:last-child,
-  .membersTable td:last-child {
-    min-width: 60px;
+  /* 移动端只显示学号、姓名和报名日期 */
+  .membersTable th:nth-child(1),
+  .membersTable td:nth-child(1) {
+    width: 30%;
+    display: table-cell;
+  }
+  
+  .membersTable th:nth-child(2),
+  .membersTable td:nth-child(2) {
+    width: 30%;
+    display: table-cell;
+  }
+  
+  .membersTable th:nth-child(7),
+  .membersTable td:nth-child(7) {
+    width: 40%;
+    display: table-cell;
+  }
+  
+  /* 隐藏其他列 */
+  .membersTable th:nth-child(n+3):not(:nth-child(7)),
+  .membersTable td:nth-child(n+3):not(:nth-child(7)) {
+    display: none;
   }
   
   /* 移动端模态框样式 */
   .modal {
     width: 85%;
     padding: 15px;
-    font-size: 14px;
   }
   
   .modalButtons {
